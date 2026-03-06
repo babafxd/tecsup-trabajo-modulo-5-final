@@ -1,0 +1,32 @@
+BORRAR KUBERNETES:
+
+## LISTAR DEPLYMENTS
+kubectl get deployments --all-namespaces
+
+## OBTENER LOS PODS EN TODOS LOS DEPLOYMENTS
+kubectl get pods --all-namespaces
+
+
+# Borra el despliegue del servicio de órdenes
+kubectl delete deployment order-service -n order-service
+
+# Borra el despliegue del servicio de productos
+kubectl delete deployment product-service -n product-service
+
+## borrar deployments:
+kubectl delete namespace order-service
+kubectl delete namespace product-service
+
+
+--
+user-service : 8083
+jdbc:postgresql://localhost:5434/userdb
+
+
+
+
+
+
+
+
+
