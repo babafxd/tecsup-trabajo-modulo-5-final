@@ -1,6 +1,6 @@
 package com.tecsup.app.micro.payment.infrastructure.persistence.repository;
 
-import com.tecsup.app.micro.payment.domain.model.User;
+import com.tecsup.app.micro.payment.domain.model.Payment;
 import com.tecsup.app.micro.payment.domain.repository.UserRepository;
 import com.tecsup.app.micro.payment.infrastructure.persistence.entity.UserEntity;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +23,7 @@ public class UserRepositoryImpl implements UserRepository {
     private final JpaUserRepository jpaUserRepository;
     
     @Override
-    public List<User> findAll() {
+    public List<Payment> findAll() {
         log.debug("Finding all users");
         return jpaUserRepository.findAll()
                 .stream()
@@ -32,23 +32,23 @@ public class UserRepositoryImpl implements UserRepository {
     }
     
     @Override
-    public Optional<User> findById(Long id) {
+    public Optional<Payment> findById(Long id) {
         log.debug("Finding user by id: {}", id);
         return jpaUserRepository.findById(id)
                 .map(this::toDomain);
     }
     
     @Override
-    public Optional<User> findByEmail(String email) {
+    public Optional<Payment> findByEmail(String email) {
         log.debug("Finding user by email: {}", email);
         return jpaUserRepository.findByEmail(email)
                 .map(this::toDomain);
     }
     
     @Override
-    public User save(User user) {
-        log.debug("Saving user: {}", user.getEmail());
-        UserEntity entity = toEntity(user);
+    public Payment save(Payment payment) {
+        log.debug("Saving user: {}", payment.getEmail());
+        UserEntity entity = toEntity(payment);
         UserEntity savedEntity = jpaUserRepository.save(entity);
         return toDomain(savedEntity);
     }
@@ -67,8 +67,8 @@ public class UserRepositoryImpl implements UserRepository {
     
     // Mappers
     
-    private User toDomain(UserEntity entity) {
-        return User.builder()
+    private Payment toDomain(UserEntity entity) {
+        return Payment.builder()
                 .id(entity.getId())
                 .name(entity.getName())
                 .email(entity.getEmail())
@@ -79,15 +79,15 @@ public class UserRepositoryImpl implements UserRepository {
                 .build();
     }
     
-    private UserEntity toEntity(User user) {
+    private UserEntity toEntity(Payment payment) {
         return UserEntity.builder()
-                .id(user.getId())
-                .name(user.getName())
-                .email(user.getEmail())
-                .phone(user.getPhone())
-                .address(user.getAddress())
-                .createdAt(user.getCreatedAt())
-                .updatedAt(user.getUpdatedAt())
+                .id(payment.getId())
+                .name(payment.getName())
+                .email(payment.getEmail())
+                .phone(payment.getPhone())
+                .address(payment.getAddress())
+                .createdAt(payment.getCreatedAt())
+                .updatedAt(payment.getUpdatedAt())
                 .build();
     }
 }

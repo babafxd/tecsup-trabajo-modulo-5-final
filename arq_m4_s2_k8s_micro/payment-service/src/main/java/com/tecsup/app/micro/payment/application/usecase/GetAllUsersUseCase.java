@@ -1,6 +1,6 @@
 package com.tecsup.app.micro.payment.application.usecase;
 
-import com.tecsup.app.micro.payment.domain.model.User;
+import com.tecsup.app.micro.payment.domain.model.Payment;
 import com.tecsup.app.micro.payment.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +18,7 @@ public class GetAllUsersUseCase {
     
     private final UserRepository userRepository;
     
-    public List<User> execute() {
+    public List<Payment> execute() {
         log.debug("Executing GetAllUsersUseCase");
         return userRepository.findAll();
     }

@@ -2,10 +2,13 @@ package com.tecsup.app.micro.order.application.usecase;
 
 import com.tecsup.app.micro.order.domain.exception.InsufficientStockException;
 import com.tecsup.app.micro.order.domain.exception.ProductNotFoundException;
+import com.tecsup.app.micro.order.domain.exception.UserNotFoundException;
 import com.tecsup.app.micro.order.domain.model.Order;
 import com.tecsup.app.micro.order.domain.model.OrderItem;
+import com.tecsup.app.micro.order.domain.model.User;
 import com.tecsup.app.micro.order.domain.repository.OrderRepository;
-import com.tecsup.app.micro.order.infrastructure.client.ProductClient;
+import com.tecsup.app.micro.order.infrastructure.client.CatalogClient;
+import com.tecsup.app.micro.order.infrastructure.client.UserClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -18,16 +21,22 @@ import java.util.UUID;
 public class CreateOrderUseCase {
 
     private final OrderRepository orderRepository;
-    private final ProductClient productClient;
+    private final CatalogClient catalogClient;
+    private final UserClient userClient;
 
-    public Order execute(Order order) {
-        log.debug("Executing CreateOrderUseCase for userid: {}", order.getUserId());
+    public Order execute(Order order, String jwtToken) {
+
+
+        var userInfo = userClient.getUserById(order.getUserId(), jwtToken)
+                        .orElseThrow(()->new UserNotFoundException("User not found: " + order.getUserId()));
+
+        log.debug("Executing CreateOrderUseCase for userid: {}, name: {}", order.getUserId(), userInfo.getName());
         order.setOrderNumber("ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
         order.setStatus(Order.OrderStatus.PENDING);
 
         for (OrderItem item : order.getItems()) {
 
-            var productInfo = productClient.getProductById(item.getProductId())
+            var productInfo = catalogClient.getProductById(item.getProductId(), jwtToken)
                     .orElseThrow(() -> new ProductNotFoundException("Product not found: " + item.getProductId()));
 
 

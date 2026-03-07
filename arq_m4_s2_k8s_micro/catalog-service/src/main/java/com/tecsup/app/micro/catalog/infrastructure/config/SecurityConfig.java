@@ -54,14 +54,14 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
                         // Endpoints públicos (lectura de productos)
-                        .requestMatchers(HttpMethod.GET, "/api/products").permitAll()
+                        //.requestMatchers(HttpMethod.GET, "/api/products").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/products/available").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/products/health").permitAll()
-                        //.requestMatchers(HttpMethod.GET, "/api/products/{id}").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/products/{id}").hasRole("ADMIN") //.permitAll() // CAMBIO
+                        .requestMatchers(HttpMethod.GET, "/api/products/{id}").hasAnyRole("ADMIN","USER") //.permitAll() // CAMBIO
                         .requestMatchers("/actuator/health/**").permitAll()
 
                         // Solo ADMIN puede crear, actualizar, eliminar productos
+                        .requestMatchers(HttpMethod.GET, "/api/products").hasAnyRole("ADMIN","USER")
                         .requestMatchers(HttpMethod.POST, "/api/products").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/products/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasRole("ADMIN")

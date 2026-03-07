@@ -16,8 +16,8 @@ public class OrderApplicationService {
     private final CreateOrderUseCase createOrderUseCase;
 
     @Transactional
-    public Order createOrder(Order order) {
-        return createOrderUseCase.execute(order);
+    public Order createOrder(Order order, String jwtToken) {
+        return createOrderUseCase.execute(order, jwtToken);
     }
 
 

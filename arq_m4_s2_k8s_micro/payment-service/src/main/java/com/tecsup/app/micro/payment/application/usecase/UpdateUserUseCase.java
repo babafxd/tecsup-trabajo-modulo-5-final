@@ -3,7 +3,7 @@ package com.tecsup.app.micro.payment.application.usecase;
 import com.tecsup.app.micro.payment.domain.exception.DuplicateEmailException;
 import com.tecsup.app.micro.payment.domain.exception.InvalidUserDataException;
 import com.tecsup.app.micro.payment.domain.exception.UserNotFoundException;
-import com.tecsup.app.micro.payment.domain.model.User;
+import com.tecsup.app.micro.payment.domain.model.Payment;
 import com.tecsup.app.micro.payment.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,35 +19,35 @@ public class UpdateUserUseCase {
     
     private final UserRepository userRepository;
     
-    public User execute(Long id, User userDetails) {
+    public Payment execute(Long id, Payment paymentDetails) {
         log.debug("Executing UpdateUserUseCase for id: {}", id);
         
         // Verificar que el usuario existe
-        User existingUser = userRepository.findById(id)
+        Payment existingPayment = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
         
         // Validar datos del usuario
-        if (!userDetails.isValid()) {
+        if (!paymentDetails.isValid()) {
             throw new InvalidUserDataException("Invalid user data. Name and valid email are required.");
         }
         
         // Si el email cambió, verificar que no exista en otro usuario
-        if (!existingUser.getEmail().equals(userDetails.getEmail())) {
-            if (userRepository.existsByEmail(userDetails.getEmail())) {
-                throw new DuplicateEmailException(userDetails.getEmail());
+        if (!existingPayment.getEmail().equals(paymentDetails.getEmail())) {
+            if (userRepository.existsByEmail(paymentDetails.getEmail())) {
+                throw new DuplicateEmailException(paymentDetails.getEmail());
             }
         }
         
         // Actualizar campos
-        existingUser.setName(userDetails.getName());
-        existingUser.setEmail(userDetails.getEmail());
-        existingUser.setPhone(userDetails.getPhone());
-        existingUser.setAddress(userDetails.getAddress());
+        existingPayment.setName(paymentDetails.getName());
+        existingPayment.setEmail(paymentDetails.getEmail());
+        existingPayment.setPhone(paymentDetails.getPhone());
+        existingPayment.setAddress(paymentDetails.getAddress());
         
         // Guardar cambios
-        User updatedUser = userRepository.save(existingUser);
-        log.info("User updated successfully with id: {}", updatedUser.getId());
+        Payment updatedPayment = userRepository.save(existingPayment);
+        log.info("User updated successfully with id: {}", updatedPayment.getId());
         
-        return updatedUser;
+        return updatedPayment;
     }
 }

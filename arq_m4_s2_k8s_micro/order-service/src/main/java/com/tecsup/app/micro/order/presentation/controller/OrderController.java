@@ -12,10 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -27,10 +24,22 @@ public class OrderController {
     private final OrderDtoMapper orderDtoMapper;
 
     @PostMapping
-    public ResponseEntity<OrderResponse> createOrder(@Valid @RequestBody CreateOrderRequest request) {
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<OrderResponse> createOrder(
+                @Valid @RequestBody CreateOrderRequest request,
+                @RequestHeader(value = "Authorization", required = false) String authHeader) {
+
+        String jwtToken = null;
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            jwtToken = authHeader.substring(7);
+        } else {
+            log.warn("No Authorization header with Bearer token found for product retrieval");
+        }
+        log.info("jwtToken extracted for product retrieval: {}", jwtToken != null);
+
         log.info("REST request to create order for userid: {}", request.getUserId());
         Order order = orderDtoMapper.toDomain(request);
-        Order createdOrder = orderApplicationService.createOrder(order);
+        Order createdOrder = orderApplicationService.createOrder(order, jwtToken);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(orderDtoMapper.toResponse(createdOrder));
     }

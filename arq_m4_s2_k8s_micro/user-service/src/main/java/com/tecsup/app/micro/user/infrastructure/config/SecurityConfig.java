@@ -66,7 +66,12 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/health/**").permitAll()
 
                         // Solo ADMIN puede gestionar usuarios
-                        .requestMatchers("/api/users/**").hasRole("ADMIN")
+                        //.requestMatchers("/api/users/**").hasAnyRole("ADMIN","USER")
+                        .requestMatchers(HttpMethod.GET,"/api/users").hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET,"/api/users/{id}").hasAnyRole("ADMIN","USER")
+                        .requestMatchers(HttpMethod.POST, "/api/users").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/users/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/users/**").hasRole("ADMIN")
 
                         // Todo lo demás requiere autenticación
                         .anyRequest().authenticated()

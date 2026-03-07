@@ -3,6 +3,7 @@ package com.tecsup.app.micro.order.presentation.controller;
 import com.tecsup.app.micro.order.domain.exception.InsufficientStockException;
 import com.tecsup.app.micro.order.domain.exception.InvalidOrderDataException;
 import com.tecsup.app.micro.order.domain.exception.ProductNotFoundException;
+import com.tecsup.app.micro.order.domain.exception.UserNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +24,18 @@ import java.util.Map;
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
-    
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleUserNotFoundException(UserNotFoundException ex) {
+        log.error("User not found: {}", ex.getMessage());
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.NOT_FOUND.value(),
+                ex.getMessage(),
+                LocalDateTime.now()
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
     /**
      * Maneja ProductNotFoundException
      */

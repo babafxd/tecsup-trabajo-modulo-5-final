@@ -34,6 +34,7 @@ public class ProductController {
      * Obtiene todos los productos
      */
     @GetMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<ProductResponse>> getAllProducts() {
         log.info("REST request to get all products");
         List<Product> products = productApplicationService.getAllProducts();

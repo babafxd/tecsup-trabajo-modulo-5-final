@@ -8,18 +8,18 @@
 # SERVER CONFIGURATION
 # ============================================
 server:
-  port: 8081
+  port: 8085
 
 spring:
   application:
-    name: user-service
+    name: order-service
 
   # ============================================
   # DATASOURCE CONFIGURATION
   # ============================================
   # Estas variables vienen de ConfigMap y Secrets de Kubernetes
   datasource:
-    url: jdbc:postgresql://localhost:5435/orderdb
+    url: jdbc:postgresql://localhost:5436/orderdb
     username:  ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
@@ -76,10 +76,20 @@ logging:
 
 
 # ============================================
-# PRODUCT SERVICE URL - Comunicación entre servicios
+# CATALOG SERVICE URL - Comunicación entre servicios
 # ============================================
 # En Kubernetes, usar DNS interno
 # Formato: http://<service-name>.<namespace>.svc.cluster.local
-product:
+catalog:
   service:
-    url: ${PRODUCT_SERVICE_URL:http://localhost:8082}
+    url: ${CATALOG_SERVICE_URL:http://localhost:8084}
+user:
+  service:
+    url: ${USER_SERVICE_URL:http://localhost:8083}
+
+# ============================================
+# JWT CONFIGURATION (Sesión 2)
+# ============================================
+jwt:
+  secret: ${JWT_SECRET:m1S3cr3tK3yJWT_T3csup2025!@#SecureToken}
+  expiration: 3600000  # 1 hora en milisegundos

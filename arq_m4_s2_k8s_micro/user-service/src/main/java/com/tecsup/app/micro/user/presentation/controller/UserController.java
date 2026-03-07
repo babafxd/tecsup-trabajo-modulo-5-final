@@ -73,7 +73,7 @@ public class UserController {
      * Obtiene un usuario por ID (solo ADMIN)
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
         log.info("REST request to get user by id: {}", id);
         User user = userApplicationService.getUserById(id);

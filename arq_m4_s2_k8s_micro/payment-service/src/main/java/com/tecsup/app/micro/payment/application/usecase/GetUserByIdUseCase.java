@@ -1,7 +1,7 @@
 package com.tecsup.app.micro.payment.application.usecase;
 
 import com.tecsup.app.micro.payment.domain.exception.UserNotFoundException;
-import com.tecsup.app.micro.payment.domain.model.User;
+import com.tecsup.app.micro.payment.domain.model.Payment;
 import com.tecsup.app.micro.payment.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +17,7 @@ public class GetUserByIdUseCase {
     
     private final UserRepository userRepository;
     
-    public User execute(Long id) {
+    public Payment execute(Long id) {
         log.debug("Executing GetUserByIdUseCase for id: {}", id);
         return userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));

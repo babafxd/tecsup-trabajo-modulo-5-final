@@ -19,7 +19,7 @@ server:
 
 spring:
   application:
-    name: user-service
+    name: payment-service
 
   # ============================================
   # DATASOURCE CONFIGURATION
@@ -95,7 +95,7 @@ logging:
 ```
 - Compilar para verificar
 ```
-cd user-service
+cd payment-service
 mvn clean compile
 ```
 
@@ -106,7 +106,7 @@ mvn clean compile
 docker-compose -f ../docker-compose.yml up -d
 
 # Ver logs
-docker logs postgres-user
+docker logs postgres-payment
 
 ```
 
@@ -117,7 +117,7 @@ docker logs postgres-user
 
 
 
-### 4.- Dockerizar user-service
+### 4.- Dockerizar payment-service
 
 #### Compilar con perfil Kubernetes
 
@@ -136,7 +136,7 @@ FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
 # Copiar JAR desde etapa de build
-COPY target/*.jar /app/user-service.jar
+COPY target/*.jar /app/payment-service.jar
 
 # Puerto
 EXPOSE 8081
@@ -145,7 +145,7 @@ EXPOSE 8081
 ENV JAVA_OPTS="-Xmx512m -Xms256m"
 
 # Comando de inicio
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /app/user-service.jar"]
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /app/payment-service.jar"]
 
 ```
 
@@ -153,16 +153,16 @@ ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /app/user-service.jar"]
 
 ```
 # Construir imagen
-docker build -t user-service:1.0 .
+docker build -t payment-service:1.0 .
 
 # Este proceso toma 2-3 minutos la primera vez
 # Ver progreso: [1/2] STEP X/Y...
 
 # Verificar imagen creada
-docker images | grep user-service
+docker images | grep payment-service
 
 # Deberías ver:
-# user-service   1.0   abc123def456   1 minute ago   230MB
+# payment-service   1.0   abc123def456   1 minute ago   230MB
 
 ```
 
@@ -175,7 +175,7 @@ docker run -p 8081:8081 \
 -e DB_URL=jdbc:postgresql://host.docker.internal:5434/userdb \
 -e DB_USERNAME=postgres \
 -e DB_PASSWORD=postgres \
-user-service:1.0
+payment-service:1.0
 
 # Deberías ver:
 # Started UserServiceApplication in X seconds
@@ -190,7 +190,7 @@ curl http://localhost:8081/actuator/health
 # {"status":"UP","groups":["liveness","readiness"]}
 
 # Listar usuarios
-curl http://localhost:8081/api/users
+curl http://localhost:8081/api/payments
 
 ```
 
@@ -204,14 +204,14 @@ curl http://localhost:8081/api/users
 kubectl apply -f k8s/00-namespace.yaml
 
 # Output:
-# namespace/user-service created
+# namespace/payment-service created
 ```
 - Verificar namespace
 ```
 kubectl get namespaces  
 
 # Deberías ver:
-# user-service       Active   X minutes
+# payment-service       Active   X minutes
 ```
 
 #### Crear ConfigMap
@@ -221,14 +221,14 @@ kubectl get namespaces
 kubectl apply -f k8s/01-configmap.yaml
 
 # Output:
-# configmap/user-service-config created
+# configmap/payment-service-config created
 ```
 - Verificar ConfigMap
 ```
-kubectl get configmap -n user-service
+kubectl get configmap -n payment-service
 
 # Ver contenido
-kubectl describe configmap user-service-config -n user-service
+kubectl describe configmap payment-service-config -n payment-service
 ```
 
 
@@ -239,13 +239,13 @@ kubectl describe configmap user-service-config -n user-service
 kubectl apply -f k8s/02-secret.yaml
 
 # Output:
-# secret/user-service-secret created
+# secret/payment-service-secret created
 
 # Verificar
-kubectl get secret -n user-service
+kubectl get secret -n payment-service
 
 # Ver detalle 
-kubectl describe secret user-service-secret -n user-service
+kubectl describe secret payment-service-secret -n payment-service
 
 ```
 
@@ -256,28 +256,28 @@ kubectl describe secret user-service-secret -n user-service
 kubectl apply -f k8s/03-deployment.yaml
 
 # Output:
-# deployment.apps/user-service created
+# deployment.apps/payment-service created
 ```
 
 
 - En caso necesites redesplegar (por ejemplo, después de corregir un error en el Deployment):
 ```
- kubectl rollout restart deployment user-service -n user-service
+ kubectl rollout restart deployment payment-service -n payment-service
 ```
 
 
 - Verificar pods
 ```
-kubectl get pods -n user-service 
+kubectl get pods -n payment-service 
 ```
 
 - Ver logs
 ```
 # Ver logs
-kubectl logs -f <POD_NAME> -n user-service
+kubectl logs -f <POD_NAME> -n payment-service
 
 # Ver descripción completa del pod
-kubectl describe pod <POD_NAME> -n user-service
+kubectl describe pod <POD_NAME> -n payment-service
 
 ```
 
@@ -285,7 +285,7 @@ kubectl describe pod <POD_NAME> -n user-service
 
 ```
 # Entrar al pod
-kubectl exec -it <POD_NAME> -n user-service -- /bin/sh
+kubectl exec -it <POD_NAME> -n payment-service -- /bin/sh
 
 # Ver variables
 env | grep DB_
@@ -304,21 +304,21 @@ exit
 kubectl apply -f k8s/04-service.yaml
 
 # Output:
-# service/user-service created
+# service/payment-service created
 ```
 
 - Verificar Service
 ```
 
-kubectl get service -n user-service
+kubectl get service -n payment-service
 
 # Output:
 # NAME              TYPE       CLUSTER-IP      PORT(S)        AGE
-# user-service      NodePort   10.96.xxx.xxx   80:30082/TCP   5s
+# payment-service      NodePort   10.96.xxx.xxx   80:30082/TCP   5s
 
 ```
 
-- Probar user-service
+- Probar payment-service
 ```
 # Health check
 curl http://localhost:30081/actuator/health
@@ -326,15 +326,15 @@ curl http://localhost:30081/actuator/health
 # Output esperado:
 # {"status":"UP"}
 ```
-# Listar users
+# Listar payments
 ```
-curl http://localhost:30081/api/users
+curl http://localhost:30081/api/payments
 ```
 
 #### Ver logs 
 ```
-# Ver logs de user-service
-kubectl logs -f <POD_NAME> -n user-service
+# Ver logs de payment-service
+kubectl logs -f <POD_NAME> -n payment-service
 
 
 ```

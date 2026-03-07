@@ -1,0 +1,35 @@
+Estos son los servicios:
+
+El sistema consta de servicios como: Servicio de Usuarios, Servicio de Pedidos,
+
+Servicio de Catálogo, Servicio de Entregas, y Servicio de Pagos. 
+
+
+
+Listalos correctamente y elabora el flujo que te propongo:
+
+* Usuario se autentica y obtiene un token (user-service) : OK
+
+* Con el token, podemos consultar el catalogo para escoger que vamos a pedir (catalog-service) : OK
+
+* Con el token, podemos realizar un pedido (order-service) : OK
+
+* Con el token, podemos realizar el pago (payment-service)  : FALTA PROBAR Y PROBAR LOS EVENTOS QUE EMITE
+
+* Con el token, podemos consultar con el codigo de entrega el pedido (delivery-service)
+
+
+
+AHORA LOS EVENTOS:
+
+* order-service: crear un pedido con estado PENDIENTE PAGO. (PENDING)  : OK
+
+* payment-service : registra el pago, emite evento PaymentApprovedEvent o PaymentRejectedEvent, order-service consume estos eventos y actualizan el pedido a PAGADO.
+
+* order-service: despues de consumir el evento PaymentApprovedEvent o PaymentRejectedEvent, emite un evento OrderApproved.
+
+* delivery-service: consume el evento OrderApproved y registra una entrega o delivery, despues notifica por correo el id delivery para que el usuario pueda consultar la entrega por el endpoint de consulta.
+
+
+
+## Ordena todo lo que te brinde para posteriormente crear los json de las tramas y ver como quedaria en postman

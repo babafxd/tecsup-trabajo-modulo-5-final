@@ -22,7 +22,14 @@ kubectl delete namespace product-service
 user-service : 8083
 jdbc:postgresql://localhost:5434/userdb
 
+catalog-service : 8084
+jdbc:postgresql://localhost:5435/catalogdb
 
+order-service : 8085
+jdbc:postgresql://localhost:5436/orderdb
+
+payment-service : 8086
+jdbc:postgresql://localhost:5437/paymentdb
 
 
 

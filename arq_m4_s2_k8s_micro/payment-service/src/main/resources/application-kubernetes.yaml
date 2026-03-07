@@ -8,18 +8,18 @@
 # SERVER CONFIGURATION
 # ============================================
 server:
-  port: 8081
+  port: 8086
 
 spring:
   application:
-    name: user-service
+    name: payment-service
 
   # ============================================
   # DATASOURCE CONFIGURATION
   # ============================================
   # Estas variables vienen de ConfigMap y Secrets de Kubernetes
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5434/userdb}
+    url: ${DB_URL:jdbc:postgresql://localhost:5437/paymentdb}
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
@@ -73,3 +73,18 @@ logging:
   level:
     com.tecsup.app.micro.user: ${LOG_LEVEL:INFO}
     org.hibernate.SQL: ${SQL_LOG_LEVEL:WARN}
+
+# ============================================
+# KAFKA CONFIGURATION
+# ============================================
+kafka:
+  bootstrap-servers: ${KAFKA_SERVERS:localhost:9092}
+  producer:
+    key-serializer: org.apache.kafka.common.serialization.StringSerializer
+    value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+  consumer:
+    key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+    group-id: ${KAFKA_GROUP_ID:payment-group} # Buena práctica añadir group-id
+    properties:
+      spring.json.trusted.packages: "*"

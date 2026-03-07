@@ -1,6 +1,6 @@
 package com.tecsup.app.micro.payment.domain.repository;
 
-import com.tecsup.app.micro.payment.domain.model.User;
+import com.tecsup.app.micro.payment.domain.model.Payment;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,22 +15,22 @@ public interface UserRepository {
     /**
      * Obtiene todos los usuarios
      */
-    List<User> findAll();
+    List<Payment> findAll();
     
     /**
      * Busca un usuario por ID
      */
-    Optional<User> findById(Long id);
+    Optional<Payment> findById(Long id);
     
     /**
      * Busca un usuario por email
      */
-    Optional<User> findByEmail(String email);
+    Optional<Payment> findByEmail(String email);
     
     /**
      * Guarda un nuevo usuario o actualiza uno existente
      */
-    User save(User user);
+    Payment save(Payment payment);
     
     /**
      * Elimina un usuario por ID

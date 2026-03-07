@@ -88,7 +88,7 @@ import java.util.Set;
  * Esta clase pertenece a la capa de infraestructura y maneja la persistencia
  */
 @Entity
-@Table(name = "users", indexes = {
+@Table(name = "payments", indexes = {
         @Index(name = "idx_users_email", columnList = "email", unique = true),
         @Index(name = "idx_users_name", columnList = "name"),
         @Index(name = "idx_users_created_at", columnList = "created_at")
@@ -215,7 +215,7 @@ import java.util.stream.Collectors;
  *
  * Usa el email como username para autenticación.
  * Lee los roles desde la tabla user_roles (relación N:N).
- * Los passwords están almacenados con BCrypt en la tabla users.
+ * Los passwords están almacenados con BCrypt en la tabla payments.
  */
 @Service
 @RequiredArgsConstructor
@@ -287,7 +287,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 /**
- * Configuración de Spring Security para user-service
+ * Configuración de Spring Security para payment-service
  *
  * Paquete: com.tecsup.app.micro.payment.infrastructure.config
  * Sesión 1: HTTP Basic + roles
@@ -296,9 +296,9 @@ import org.springframework.security.web.SecurityFilterChain;
  * Endpoints:
  *   POST /api/auth/login       → público (Sesión 2)
  *   POST /api/auth/register    → público (Sesión 2)
- *   GET  /api/users/health     → público
- *   GET  /api/users/me         → autenticado
- *   GET/POST/PUT/DELETE /api/users/** → ADMIN
+ *   GET  /api/payments/health     → público
+ *   GET  /api/payments/me         → autenticado
+ *   GET/POST/PUT/DELETE /api/payments/** → ADMIN
  *   Actuator /actuator/health  → público
  */
 @Configuration
@@ -325,11 +325,11 @@ public class SecurityConfig {
 
                         // Endpoints públicos
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/users/health").permitAll()
+                        .requestMatchers("/api/payments/health").permitAll()
                         .requestMatchers("/actuator/health/**").permitAll()
 
                         // Solo ADMIN puede gestionar usuarios
-                        .requestMatchers("/api/users/**").hasRole("ADMIN")
+                        .requestMatchers("/api/payments/**").hasRole("ADMIN")
 
                         // Todo lo demás requiere autenticación
                         .anyRequest().authenticated()
@@ -394,12 +394,14 @@ public class SecurityConfig {
 ```java
 package com.tecsup.app.micro.payment.presentation.controller;
 
-import com.tecsup.app.micro.payment.application.service.UserApplicationService;
+import com.tecsup.app.micro.payment.application.service.PaymentApplicationService;
+import com.tecsup.app.micro.payment.domain.model.Payment;
 import com.tecsup.app.micro.payment.domain.model.User;
+import com.tecsup.app.micro.payment.presentation.dto.CreatePaymentRequest;
 import com.tecsup.app.micro.payment.presentation.dto.CreateUserRequest;
 import com.tecsup.app.micro.payment.presentation.dto.UpdateUserRequest;
 import com.tecsup.app.micro.payment.presentation.dto.UserResponse;
-import com.tecsup.app.micro.payment.presentation.mapper.UserDtoMapper;
+import com.tecsup.app.micro.payment.presentation.mapper.PaymentDtoMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -416,22 +418,22 @@ import java.util.List;
  * MODIFICADO en Módulo 4 - Sesión 1: Se agregan anotaciones @PreAuthorize
  *
  * Reglas de acceso:
- *   GET    /api/users          → ADMIN
- *   GET    /api/users/{id}     → ADMIN
- *   GET    /api/users/me       → Autenticado (cualquier rol)
- *   POST   /api/users          → ADMIN
- *   PUT    /api/users/{id}     → ADMIN
- *   DELETE /api/users/{id}     → ADMIN
- *   GET    /api/users/health   → Público
+ *   GET    /api/payments          → ADMIN
+ *   GET    /api/payments/{id}     → ADMIN
+ *   GET    /api/payments/me       → Autenticado (cualquier rol)
+ *   POST   /api/payments          → ADMIN
+ *   PUT    /api/payments/{id}     → ADMIN
+ *   DELETE /api/payments/{id}     → ADMIN
+ *   GET    /api/payments/health   → Público
  */
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/payments")
 @RequiredArgsConstructor
 @Slf4j
 public class UserController {
 
-    private final UserApplicationService userApplicationService;
-    private final UserDtoMapper userDtoMapper;
+    private final PaymentApplicationService paymentApplicationService;
+    private final PaymentDtoMapper paymentDtoMapper;
 
     /**
      * Obtiene todos los usuarios (solo ADMIN)
@@ -439,9 +441,9 @@ public class UserController {
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<UserResponse>> getAllUsers() {
-        log.info("REST request to get all users");
-        List<User> users = userApplicationService.getAllUsers();
-        return ResponseEntity.ok(userDtoMapper.toResponseList(users));
+        log.info("REST request to get all payments");
+        List<Payment> payments = userApplicationService.getAllUsers();
+        return ResponseEntity.ok(userDtoMapper.toResponseList(payments));
     }
 
     /**
@@ -452,7 +454,7 @@ public class UserController {
     @GetMapping("/me")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserResponse> getCurrentUser(Authentication authentication) {
-        log.info("REST request to get current user: {}", authentication.getName());
+        log.info("REST request to get current payment: {}", authentication.getName());
         // authentication.getName() retorna el email (subject del JWT)
         // Se podría buscar por email en lugar de por ID
         return ResponseEntity.ok(
@@ -469,9 +471,9 @@ public class UserController {
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
-        log.info("REST request to get user by id: {}", id);
-        User user = userApplicationService.getUserById(id);
-        return ResponseEntity.ok(userDtoMapper.toResponse(user));
+        log.info("REST request to get payment by id: {}", id);
+        Payment payment = userApplicationService.getUserById(id);
+        return ResponseEntity.ok(userDtoMapper.toResponse(payment));
     }
 
     /**
@@ -479,12 +481,12 @@ public class UserController {
      */
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UserResponse> createUser(@Valid @RequestBody CreateUserRequest request) {
-        log.info("REST request to create user: {}", request.getEmail());
-        User user = userDtoMapper.toDomain(request);
-        User createdUser = userApplicationService.createUser(user);
+    public ResponseEntity<UserResponse> createUser(@Valid @RequestBody CreatePaymentRequest request) {
+        log.info("REST request to create payment: {}", request.getEmail());
+        Payment payment = userDtoMapper.toDomain(request);
+        Payment createdPayment = userApplicationService.createUser(payment);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(userDtoMapper.toResponse(createdUser));
+                .body(userDtoMapper.toResponse(createdPayment));
     }
 
     /**
@@ -495,10 +497,10 @@ public class UserController {
     public ResponseEntity<UserResponse> updateUser(
             @PathVariable Long id,
             @Valid @RequestBody UpdateUserRequest request) {
-        log.info("REST request to update user with id: {}", id);
-        User user = userDtoMapper.toDomain(request);
-        User updatedUser = userApplicationService.updateUser(id, user);
-        return ResponseEntity.ok(userDtoMapper.toResponse(updatedUser));
+        log.info("REST request to update payment with id: {}", id);
+        Payment payment = userDtoMapper.toDomain(request);
+        Payment updatedPayment = userApplicationService.updateUser(id, payment);
+        return ResponseEntity.ok(userDtoMapper.toResponse(updatedPayment));
     }
 
     /**
@@ -507,7 +509,7 @@ public class UserController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        log.info("REST request to delete user with id: {}", id);
+        log.info("REST request to delete payment with id: {}", id);
         userApplicationService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
@@ -528,13 +530,13 @@ public class UserController {
 - Ejecutar la aplicación y probar los endpoints con Postman o curl.
 ```
 # Sin autenticación → 401
-curl http://localhost:8081/api/users
+curl http://localhost:8081/api/payments
 
 # Con ADMIN → 200
-curl -u juan.perez@example.com:admin123 http://localhost:8081/api/users
+curl -u juan.perez@example.com:admin123 http://localhost:8081/api/payments
 
 # Con USER intentando acceso ADMIN → 403
-curl -u maria.garcia@example.com:user123 http://localhost:8081/api/users
+curl -u maria.garcia@example.com:user123 http://localhost:8081/api/payments
 ```
 
 ## 2.- Desplegar en Kubernetes con seguridad
@@ -551,16 +553,16 @@ curl -u maria.garcia@example.com:user123 http://localhost:8081/api/users
 mvn clean package -DskipTests
 
 # Construir imagen
-docker build -t user-service:1.0 .
+docker build -t payment-service:1.0 .
 
 # Este proceso toma 2-3 minutos la primera vez
 # Ver progreso: [1/2] STEP X/Y...
 
 # Verificar imagen creada
-docker images | grep user-service
+docker images | grep payment-service
 
 # Deberías ver:
-# user-service   1.0   abc123def456   1 minute ago   230MB
+# payment-service   1.0   abc123def456   1 minute ago   230MB
 
 ```
 
@@ -573,7 +575,7 @@ docker run -p 8081:8081 \
 -e DB_URL=jdbc:postgresql://host.docker.internal:5434/userdb \
 -e DB_USERNAME=postgres \
 -e DB_PASSWORD=postgres \
-user-service:1.0
+payment-service:1.0
 
 
 # En otra terminal, probar
@@ -585,7 +587,7 @@ curl http://localhost:8081/actuator/health
 # {"status":"UP","groups":["liveness","readiness"]}
 
 # Listar usuarios
-curl http://localhost:8081/api/users
+curl http://localhost:8081/api/payments
 
 ```
 
@@ -593,24 +595,24 @@ curl http://localhost:8081/api/users
 
 - En caso se haya modificado el código después del despliegue inicial, reiniciar el deployment para aplicar los cambios:
 ```
- kubectl rollout restart deployment user-service -n user-service
+ kubectl rollout restart deployment payment-service -n payment-service
 ```
 - Verificar despliegue, servicio y pods:
 ```
 # Verificar despliegue
-kubectl get deployments -n user-service
+kubectl get deployments -n payment-service
 
 # Verificar servicio
-kubectl get service -n user-service
+kubectl get service -n payment-service
 
 # Verificar pods
-kubectl get pods  -n user-service
+kubectl get pods  -n payment-service
 
 # Ver detalles de un pod
-kubectl describe pod <POD_NAME> -n user-service
+kubectl describe pod <POD_NAME> -n payment-service
 
 # Ver logs en tiempo real
-kubectl logs -f <POD_NAME> -n user-service
+kubectl logs -f <POD_NAME> -n payment-service
 
 ```
 
@@ -619,11 +621,11 @@ kubectl logs -f <POD_NAME> -n user-service
 
 ```
 # Sin autenticación → 401
-curl http://localhost:30081/api/users
+curl http://localhost:30081/api/payments
 
 # Con ADMIN → 200
-curl -u juan.perez@example.com:admin123 http://localhost:30081/api/users
+curl -u juan.perez@example.com:admin123 http://localhost:30081/api/payments
 
 # Con USER intentando acceso ADMIN → 403
-curl -u maria.garcia@example.com:user123 http://localhost:30081/api/users
+curl -u maria.garcia@example.com:user123 http://localhost:30081/api/payments
 ```
