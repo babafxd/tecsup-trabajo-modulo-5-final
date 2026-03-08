@@ -167,7 +167,6 @@ public class UserEntity {
 
 package com.tecsup.app.micro.payment.infrastructure.persistence.repository;
 
-import com.tecsup.app.micro.payment.infrastructure.persistence.entity.RoleEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
@@ -191,7 +190,8 @@ public interface JpaRoleRepository extends JpaRepository<RoleEntity, Long> {
 
 package com.tecsup.app.micro.payment.infrastructure.security;
 
-import com.tecsup.app.micro.payment.infrastructure.persistence.entity.UserEntity;
+import com.tecsup.app.micro.payment.infrastructure.persistence.entity.PaymentEntity;
+import com.tecsup.app.micro.payment.infrastructure.persistence.repository.JpaPaymentRepository;
 import com.tecsup.app.micro.payment.infrastructure.persistence.repository.JpaUserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -222,7 +222,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private final JpaUserRepository jpaUserRepository;
+    private final JpaPaymentRepository jpaPaymentRepository;
 
     /**
      * Carga un usuario por email desde userdb.
@@ -237,7 +237,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         log.info("Autenticando usuario con email: {}", email);
 
-        UserEntity userEntity = jpaUserRepository.findByEmail(email)
+        PaymentEntity paymentEntity = jpaUserRepository.findByEmail(email)
                 .orElseThrow(() -> {
                     log.warn("Usuario no encontrado: {}", email);
                     return new UsernameNotFoundException("Usuario no encontrado con email: " + email);
@@ -245,16 +245,16 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         // Convertir roles de la BD a GrantedAuthority de Spring Security
         // Ejemplo: RoleEntity(name="ROLE_ADMIN") → SimpleGrantedAuthority("ROLE_ADMIN")
-        List<GrantedAuthority> authorities = userEntity.getRoles().stream()
+        List<GrantedAuthority> authorities = paymentEntity.getRoles().stream()
                 .map(role -> new SimpleGrantedAuthority(role.getName()))
                 .collect(Collectors.toList());
 
         log.info("Usuario autenticado: {} con roles: {}", email, authorities);
 
         return new User(
-                userEntity.getEmail(),       // username = email
-                userEntity.getPassword(),    // password BCrypt desde BD
-                userEntity.getEnabled(),     // enabled
+                paymentEntity.getEmail(),       // username = email
+                paymentEntity.getPassword(),    // password BCrypt desde BD
+                paymentEntity.getEnabled(),     // enabled
                 true,                        // accountNonExpired
                 true,                        // credentialsNonExpired
                 true,                        // accountNonLocked
@@ -271,7 +271,6 @@ public class CustomUserDetailsService implements UserDetailsService {
 ```java
 package com.tecsup.app.micro.payment.infrastructure.config;
 
-import com.tecsup.app.micro.payment.infrastructure.security.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

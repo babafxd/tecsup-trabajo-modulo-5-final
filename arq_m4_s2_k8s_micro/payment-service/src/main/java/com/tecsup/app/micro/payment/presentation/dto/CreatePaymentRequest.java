@@ -1,34 +1,25 @@
 package com.tecsup.app.micro.payment.presentation.dto;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * DTO para crear un usuario
- */
+import java.math.BigDecimal;
+
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreatePaymentRequest {
-    
-    @NotBlank(message = "Name is required")
-    @Size(max = 100, message = "Name must not exceed 100 characters")
-    private String name;
-    
-    @NotBlank(message = "Email is required")
-    @Email(message = "Email must be valid")
-    @Size(max = 100, message = "Email must not exceed 100 characters")
-    private String email;
-    
-    @Size(max = 20, message = "Phone must not exceed 20 characters")
-    private String phone;
-    
-    @Size(max = 255, message = "Address must not exceed 255 characters")
-    private String address;
+
+    @NotNull(message = "orderId is required")
+    @Min(value = 1, message = "orderId must be greater than zero")
+    private Long orderId;
+
+    @NotNull(message = "amount is required")
+    @Min(value = 1, message = "amount must be greater than zero")
+    private BigDecimal amount;
 }

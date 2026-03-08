@@ -34,6 +34,12 @@ public class Order {
         PENDING, CONFIRMED, SHIPPED, DELIVERED, CANCELLED
     }
 
+
+    public boolean isConfirmed() {
+        return OrderStatus.CONFIRMED.equals(status);
+    }
+
+
     /**
      * Calcula el monto total sumando los subtotales de cada item
      */

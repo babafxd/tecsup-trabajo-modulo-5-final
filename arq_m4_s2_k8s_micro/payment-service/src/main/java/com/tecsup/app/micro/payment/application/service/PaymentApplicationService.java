@@ -18,8 +18,8 @@ public class PaymentApplicationService {
     private final CreatePaymentUseCase createPaymentUseCase;
 
     @Transactional
-    public Payment payment(Payment payment) {
-        return createPaymentUseCase.execute(payment);
+    public Payment payment(Payment payment, String jwtToken ) {
+        return createPaymentUseCase.execute(payment, jwtToken);
     }
 
     @Transactional(readOnly = true)

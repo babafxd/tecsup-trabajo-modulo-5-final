@@ -33,15 +33,35 @@ public class OrderController {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             jwtToken = authHeader.substring(7);
         } else {
-            log.warn("No Authorization header with Bearer token found for product retrieval");
+            log.warn("No Authorization header with Bearer token found for createOrder");
         }
-        log.info("jwtToken extracted for product retrieval: {}", jwtToken != null);
+        log.info("jwtToken extracted for createOrder: {}", jwtToken != null);
 
         log.info("REST request to create order for userid: {}", request.getUserId());
         Order order = orderDtoMapper.toDomain(request);
         Order createdOrder = orderApplicationService.createOrder(order, jwtToken);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(orderDtoMapper.toResponse(createdOrder));
+    }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<OrderResponse> getOrderById(@PathVariable Long id,
+                                                          @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        log.info("REST request to get order by id: {}", id);
+
+        // Extraer JWT del header
+        String jwtToken = null;
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            jwtToken = authHeader.substring(7);
+        } else {
+            log.warn("No Authorization header with Bearer token found for getOrderById");
+        }
+
+        log.info("jwtToken extracted for getOrderById: {}", jwtToken != null);
+
+        Order order = orderApplicationService.getOrderById(id, jwtToken);
+        return ResponseEntity.ok(orderDtoMapper.toResponse(order));
     }
 
 }

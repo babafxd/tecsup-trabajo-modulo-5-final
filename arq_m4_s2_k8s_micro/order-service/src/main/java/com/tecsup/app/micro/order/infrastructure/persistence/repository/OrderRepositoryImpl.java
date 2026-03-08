@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 @RequiredArgsConstructor
 @Slf4j
@@ -27,6 +29,13 @@ public class OrderRepositoryImpl implements OrderRepository {
 
         OrderEntity savedEntity = jpaOrderRepository.save(entity);
         return mapper.toDomain(savedEntity);
+    }
+
+    @Override
+    public Optional<Order> findById(Long id) {
+        log.debug("Finding product by id: {}", id);
+        return jpaOrderRepository.findById(id)
+                .map(mapper::toDomain);
     }
 
 

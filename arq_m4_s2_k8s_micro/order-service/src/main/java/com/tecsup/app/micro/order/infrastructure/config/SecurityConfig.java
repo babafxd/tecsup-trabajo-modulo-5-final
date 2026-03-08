@@ -52,7 +52,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/orders").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/orders/available").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/orders/health").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/orders/{id}").hasRole("ADMIN") //.permitAll() // CAMBIO
+                        .requestMatchers(HttpMethod.GET, "/api/orders/{id}").hasAnyRole("ADMIN","USER") //.permitAll() // CAMBIO
                         .requestMatchers("/actuator/health/**").permitAll()
 
                         // Solo ADMIN puede crear, actualizar, eliminar productos

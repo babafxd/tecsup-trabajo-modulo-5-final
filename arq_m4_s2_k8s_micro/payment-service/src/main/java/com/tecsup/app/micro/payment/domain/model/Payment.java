@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 public class Payment {
 
     private Long id;
-    private Long enrollmentId;
+    private Long orderId;
     private BigDecimal amount;
 
     @Enumerated(EnumType.STRING)
@@ -29,15 +29,16 @@ public class Payment {
         return amount != null && amount.compareTo(BigDecimal.ZERO) > 0;
     }
 
-    public boolean isValidEnrollmentId() {
-        return (enrollmentId > 0);
+    public boolean isValidOrderId() {
+        return (orderId > 0);
     }
 
     public boolean isPaymentApproved() {
-        return amount != null && amount.compareTo(new BigDecimal("100")) >= 0;
+        return amount != null && amount.compareTo(new BigDecimal("1")) >= 0;
     }
 
     public enum PaymentStatus {
-        APPROVED
+        APPROVED,
+        REJECTED
     }
 }

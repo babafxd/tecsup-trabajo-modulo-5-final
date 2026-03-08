@@ -47,6 +47,21 @@ spring:
       ddl-auto: ${DDL_AUTO:validate}
     show-sql: ${SHOW_SQL:false}
 
+  # ============================================
+  # KAFKA CONFIGURATION
+  # ============================================
+  kafka:
+    bootstrap-servers: ${KAFKA_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      group-id: ${KAFKA_GROUP_ID:payment-group} # Buena práctica añadir group-id
+      properties:
+        spring.json.trusted.packages: "*"
+
 # ============================================
 # ACTUATOR (Para health checks de Kubernetes)
 # ============================================
@@ -75,16 +90,17 @@ logging:
     org.hibernate.SQL: ${SQL_LOG_LEVEL:WARN}
 
 # ============================================
-# KAFKA CONFIGURATION
+# ORDER SERVICE URL - Comunicación entre servicios
 # ============================================
-kafka:
-  bootstrap-servers: ${KAFKA_SERVERS:localhost:9092}
-  producer:
-    key-serializer: org.apache.kafka.common.serialization.StringSerializer
-    value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-  consumer:
-    key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-    value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-    group-id: ${KAFKA_GROUP_ID:payment-group} # Buena práctica añadir group-id
-    properties:
-      spring.json.trusted.packages: "*"
+# En Kubernetes, usar DNS interno
+# Formato: http://<service-name>.<namespace>.svc.cluster.local
+order:
+  service:
+    url: ${ORDER_SERVICE_URL:http://order-service.order-service.svc.cluster.local}
+
+# ============================================
+# JWT CONFIGURATION (Sesión 2)
+# ============================================
+jwt:
+  secret: ${JWT_SECRET:m1S3cr3tK3yJWT_T3csup2025!@#SecureToken}
+  expiration: 3600000  # 1 hora en milisegundos

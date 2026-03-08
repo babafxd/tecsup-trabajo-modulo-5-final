@@ -1,8 +1,6 @@
 package com.tecsup.app.micro.payment.presentation.controller;
 
-import com.tecsup.app.micro.payment.domain.exception.DuplicateEmailException;
-import com.tecsup.app.micro.payment.domain.exception.InvalidUserDataException;
-import com.tecsup.app.micro.payment.domain.exception.UserNotFoundException;
+import com.tecsup.app.micro.payment.domain.exception.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +21,42 @@ import java.util.Map;
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
-    
+
+
+
+    @ExceptionHandler(InvalidPaymentDataException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidUserDataException(InvalidPaymentDataException ex) {
+        log.error("Invalid payment data: {}", ex.getMessage());
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                ex.getMessage(),
+                LocalDateTime.now()
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(PaymentNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handlePaymentNotFoundException(PaymentNotFoundException ex) {
+        log.error("Payment not found: {}", ex.getMessage());
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.NOT_FOUND.value(),
+                ex.getMessage(),
+                LocalDateTime.now()
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    @ExceptionHandler(OrderNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleOrderNotFoundException(OrderNotFoundException ex) {
+        log.error("Order not found: {}", ex.getMessage());
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.NOT_FOUND.value(),
+                ex.getMessage(),
+                LocalDateTime.now()
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
     /**
      * Maneja UserNotFoundException
      */

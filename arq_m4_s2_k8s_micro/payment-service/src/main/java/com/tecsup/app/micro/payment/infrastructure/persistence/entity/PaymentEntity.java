@@ -6,35 +6,36 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-/**
- * Entidad JPA de Rol
- * Sesión 1 - Módulo 4: Seguridad en Microservicios
- */
 @Entity
-@Table(name = "roles")
+@Table(name = "payments")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RoleEntity {
+public class PaymentEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 50)
-    private String name;
+    @Column(name = "order_id", nullable = false)
+    private Long orderId;
 
-    @Column(length = 200)
-    private String description;
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal amount;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    @Column(length = 30)
+    private String status;
+
+    @Column(name = "paid_at", nullable = false, updatable = false)
+    private LocalDateTime paidAt;
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
+        paidAt = LocalDateTime.now();
     }
+
 }

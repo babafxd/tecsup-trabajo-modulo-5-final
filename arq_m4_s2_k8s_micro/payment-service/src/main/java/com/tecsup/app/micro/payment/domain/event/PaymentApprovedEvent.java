@@ -12,15 +12,15 @@ import java.time.LocalDateTime;
 public class PaymentApprovedEvent extends DomainEvent {
 
     private Long paymentId;
-    private Long enrollmentId;
+    private Long orderId;
     private BigDecimal amount;
     private String status;
     private LocalDateTime paidAt;
 
-    public PaymentApprovedEvent(Long paymentId, Long enrollmentId, BigDecimal amount,String status, LocalDateTime paidAt) {
+    public PaymentApprovedEvent(Long paymentId, Long orderId, BigDecimal amount,String status, LocalDateTime paidAt) {
         super();
         this.paymentId = paymentId;
-        this.enrollmentId = enrollmentId;
+        this.orderId = orderId;
         this.amount = amount;
         this.status = status;
         this.paidAt = paidAt;

@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,14 +22,27 @@ public class PaymentController {
     private final PaymentDtoMapper paymentDtoMapper;
 
     @PostMapping
-    public ResponseEntity<PaymentResponse> createPayment(@Valid @RequestBody CreatePaymentRequest request) {
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<PaymentResponse> createPayment(@Valid @RequestBody CreatePaymentRequest request,
+                                                         @RequestHeader(value = "Authorization", required = false) String authHeader) {
         log.info("REST request to create payment");
+
+        String jwtToken = null;
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            jwtToken = authHeader.substring(7);
+        } else {
+            log.warn("No Authorization header with Bearer token found for product retrieval");
+        }
+        log.info("jwtToken extracted for product retrieval: {}", jwtToken != null);
+
         Payment payment = paymentDtoMapper.toDomain(request);
-        Payment saved = paymentApplicationService.payment(payment);
-        return ResponseEntity.status(HttpStatus.CREATED).body(paymentDtoMapper.toResponse(saved));
+        Payment saved = paymentApplicationService.payment(payment, jwtToken);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(paymentDtoMapper.toResponse(saved));
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<PaymentResponse> getPaymentById(@PathVariable Long id) {
         log.info("REST request to get payment by id: {}", id);
         Payment payment = paymentApplicationService.getPayment(id);
