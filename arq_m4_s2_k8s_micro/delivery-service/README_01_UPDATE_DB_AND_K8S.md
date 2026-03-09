@@ -10,15 +10,15 @@
 -- ============================================
 -- Migration: V4__ADD_SECURITY_TABLES.sql
 -- Description: Crear tablas de seguridad (roles, user_roles)
---              y agregar campos de autenticación a users
+--              y agregar campos de autenticación a deliveries
 -- Database: userdb
 -- ============================================
 
 -- ============================================
--- 1. Agregar campos de seguridad a tabla users
+-- 1. Agregar campos de seguridad a tabla deliveries
 -- ============================================
-ALTER TABLE users ADD COLUMN password VARCHAR(100);
-ALTER TABLE users ADD COLUMN enabled BOOLEAN NOT NULL DEFAULT true;
+ALTER TABLE deliveries ADD COLUMN password VARCHAR(100);
+ALTER TABLE deliveries ADD COLUMN enabled BOOLEAN NOT NULL DEFAULT true;
 
 -- ============================================
 -- 2. Tabla de roles
@@ -48,7 +48,7 @@ CREATE TABLE user_roles (
 
     CONSTRAINT fk_user_roles_user
         FOREIGN KEY (user_id)
-        REFERENCES users(id)
+        REFERENCES deliveries(id)
         ON DELETE CASCADE,
 
     CONSTRAINT fk_user_roles_role
@@ -64,7 +64,7 @@ COMMENT ON TABLE user_roles IS 'Relación N:N entre usuarios y roles';
 -- ============================================
 CREATE INDEX idx_user_roles_user_id ON user_roles(user_id);
 CREATE INDEX idx_user_roles_role_id ON user_roles(role_id);
-CREATE INDEX idx_users_enabled ON users(enabled);
+CREATE INDEX idx_users_enabled ON deliveries(enabled);
 ```
 
 - Crear database/V5__INSERT_SECURITY_DATA.sql
@@ -91,31 +91,31 @@ INSERT INTO roles (name, description) VALUES
 -- 2. Actualizar passwords de usuarios existentes
 -- ============================================
 -- Juan Pérez → admin (password: admin123)
-UPDATE users
+UPDATE deliveries
 SET password = '$2a$10$e77InV9/.OZ68nmbd9Co2uhuYu9g7eBNqu3nDyRHcC5x0cIH0YBJW',
     enabled = true
 WHERE id = 1;
 
--- María García → user (password: user123)
-UPDATE users
+-- María García → delivery (password: user123)
+UPDATE deliveries
 SET password = '$2a$10$tQWrbvoAohyaYiDC6e9rNO9Wf7w0eLQamxD2TJhCWKXbJjqjRTXUu',
     enabled = true
 WHERE id = 2;
 
--- Carlos López → user (password: user123)
-UPDATE users
+-- Carlos López → delivery (password: user123)
+UPDATE deliveries
 SET password = '$2a$10$tQWrbvoAohyaYiDC6e9rNO9Wf7w0eLQamxD2TJhCWKXbJjqjRTXUu',
     enabled = true
 WHERE id = 3;
 
 -- Ana Torres → admin (password: admin123)
-UPDATE users
+UPDATE deliveries
 SET password = '$2a$10$e77InV9/.OZ68nmbd9Co2uhuYu9g7eBNqu3nDyRHcC5x0cIH0YBJW',
     enabled = true
 WHERE id = 4;
 
--- Roberto Sánchez → user (password: user123)
-UPDATE users
+-- Roberto Sánchez → delivery (password: user123)
+UPDATE deliveries
 SET password = '$2a$10$tQWrbvoAohyaYiDC6e9rNO9Wf7w0eLQamxD2TJhCWKXbJjqjRTXUu',
     enabled = true
 WHERE id = 5;
@@ -123,7 +123,7 @@ WHERE id = 5;
 -- ============================================
 -- 3. Hacer password NOT NULL después de poblar
 -- ============================================
-ALTER TABLE users ALTER COLUMN password SET NOT NULL;
+ALTER TABLE deliveries ALTER COLUMN password SET NOT NULL;
 
 -- ============================================
 -- 4. Asignar roles a usuarios
@@ -168,10 +168,10 @@ INSERT INTO user_roles (user_id, role_id) VALUES
 apiVersion: v1
 kind: Secret
 metadata:
-  name: user-service-secret
-  namespace: user-service
+  name: delivery-service-secret
+  namespace: delivery-service
   labels:
-    app: user-service
+    app: delivery-service
 
 type: Opaque
 
@@ -192,10 +192,10 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: user-service-config
-  namespace: user-service
+  name: delivery-service-config
+  namespace: delivery-service
   labels:
-    app: user-service
+    app: delivery-service
 
 # Pares clave-valor
 data:
@@ -227,10 +227,10 @@ data:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: user-service
-  namespace: user-service
+  name: delivery-service
+  namespace: delivery-service
   labels:
-    app: user-service
+    app: delivery-service
 
 spec:
   # ========================================
@@ -243,7 +243,7 @@ spec:
   # ========================================
   selector:
     matchLabels:
-      app: user-service
+      app: delivery-service
 
   # ========================================
   # Template: Cómo crear cada pod
@@ -251,14 +251,14 @@ spec:
   template:
     metadata:
       labels:
-        app: user-service
+        app: delivery-service
 
     spec:
       containers:
-        - name: user-service
+        - name: delivery-service
 
           # Imagen Docker
-          image: user-service:1.0
+          image: delivery-service:1.0
 
           # imagePullPolicy:
           # - Never: Solo usar imagen local (desarrollo)
@@ -282,38 +282,38 @@ spec:
             - name: DDL_AUTO
               valueFrom:
                 configMapKeyRef:
-                  name: user-service-config
+                  name: delivery-service-config
                   key: DDL_AUTO
 
             - name: LOG_LEVEL
               valueFrom:
                 configMapKeyRef:
-                  name: user-service-config
+                  name: delivery-service-config
                   key: LOG_LEVEL
 
             - name: JAVA_OPTS
               valueFrom:
                 configMapKeyRef:
-                  name: user-service-config
+                  name: delivery-service-config
                   key: JAVA_OPTS
 
             # Desde Secret
             - name: DB_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: user-service-secret
+                  name: delivery-service-secret
                   key: DB_USERNAME
 
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: user-service-secret
+                  name: delivery-service-secret
                   key: DB_PASSWORD
 
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: user-service-secret
+                  name: delivery-service-secret
                   key: JWT_SECRET
 
 ```
@@ -330,7 +330,7 @@ kubectl config use-context docker-desktop
 
 ```
 
-- Borrar el despliegue de user-service 
+- Borrar el despliegue de delivery-service 
 ```
 # Borrar todo el namespace (incluye deployments, services, configmaps, secrets)
 kubectl delete -f k8s/00-namespace.yaml
@@ -340,7 +340,7 @@ kubectl delete -f k8s/03-deployment.yaml
 kubectl delete -f k8s/04-service.yaml
 ```
 
-- Volver a desplegar user-service
+- Volver a desplegar delivery-service
 ```
 kubectl apply -f k8s/00-namespace.yaml
 kubectl apply -f k8s/01-configmap.yaml
@@ -352,31 +352,31 @@ kubectl apply -f k8s/04-service.yaml
 - Verificar el despliegue
 ```
 # Verificar el deployment  
-kubectl get deployments -n user-service
+kubectl get deployments -n delivery-service
 
 # Verificar Service
-kubectl get service -n user-service
+kubectl get service -n delivery-service
  
 # Verificar pods
-kubectl get pods -n user-service  
+kubectl get pods -n delivery-service  
 ```
 
 - En caso necesites redesplegar (por ejemplo, después de corregir un error en el Deployment):
 ```
- kubectl rollout restart deployment user-service -n user-service
+ kubectl rollout restart deployment delivery-service -n delivery-service
 ```
 
 - Ver logs
 ```
 # Ver logs
-kubectl logs -f <POD_NAME> -n user-service
+kubectl logs -f <POD_NAME> -n delivery-service
 
 # Ver descripción completa del pod
-kubectl describe pod <POD_NAME> -n user-service
+kubectl describe pod <POD_NAME> -n delivery-service
 
 ```
 
-- Probar user-service
+- Probar delivery-service
 ```
 # Health check
 curl http://localhost:30081/actuator/health
@@ -384,14 +384,14 @@ curl http://localhost:30081/actuator/health
 # Output esperado:
 # {"status":"UP","groups":["liveness","readiness"]}
 ```
-### 4.- Listar users
+### 4.- Listar deliveries
 ```
-curl http://localhost:30081/api/users
+curl http://localhost:30081/api/deliveries
 ```
 
 #### Ver logs
 ```
-# Ver logs de user-service
-kubectl logs -f <POD_NAME> -n user-service
+# Ver logs de delivery-service
+kubectl logs -f <POD_NAME> -n delivery-service
 
 

@@ -8,18 +8,18 @@
 # SERVER CONFIGURATION
 # ============================================
 server:
-  port: 8081
+  port: 8087
 
 spring:
   application:
-    name: user-service
+    name: delivery-service
 
   # ============================================
   # DATASOURCE CONFIGURATION
   # ============================================
   # Estas variables vienen de ConfigMap y Secrets de Kubernetes
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5434/userdb}
+    url: ${DB_URL:jdbc:postgresql://localhost:5438/deliverydb}
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
@@ -73,3 +73,17 @@ logging:
   level:
     com.tecsup.app.micro.user: ${LOG_LEVEL:INFO}
     org.hibernate.SQL: ${SQL_LOG_LEVEL:WARN}
+
+# ============================================
+# JWT CONFIGURATION (Sesión 2)
+# ============================================
+jwt:
+  secret: ${JWT_SECRET:m1S3cr3tK3yJWT_T3csup2025!@#SecureToken}
+  expiration: 3600000  # 1 hora en milisegundos
+
+order:
+  service:
+    url: ${ORDER_SERVICE_URL:http://order-service.order-service.svc.cluster.local}
+user:
+  service:
+    url: ${USER_SERVICE_URL:http://user-service.user-service.svc.cluster.local}

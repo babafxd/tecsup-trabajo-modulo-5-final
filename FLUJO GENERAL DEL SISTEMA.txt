@@ -28,8 +28,10 @@ AHORA LOS EVENTOS:
 
 * order-service: despues de consumir el evento PaymentApprovedEvent o PaymentRejectedEvent, emite un evento OrderApproved.: OK
 
-* delivery-service: consume el evento OrderApproved y registra una entrega o delivery en estado READY, 
+* delivery-service: 
+	consume el evento OrderApproved y registra una entrega o delivery en estado READY, : FALTA CONFIGURAR EL CONSUMIR
 	despues notifica por correo el id delivery para que el usuario pueda consultar la entrega por el endpoint de consulta.
 	finalmente con el endpoint de PUT/1 a estado DELIVERED.
 
-## Ordena todo lo que te brinde para posteriormente crear los json de las tramas y ver como quedaria en postman
+* pasar todo a clusters
+

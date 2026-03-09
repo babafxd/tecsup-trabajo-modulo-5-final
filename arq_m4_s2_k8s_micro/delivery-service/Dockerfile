@@ -6,7 +6,7 @@ FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
 # Copiar JAR desde etapa de build
-COPY target/*.jar /app/user-service.jar
+COPY target/*.jar /app/delivery-service.jar
 
 # Puerto
 EXPOSE 8081
@@ -15,4 +15,4 @@ EXPOSE 8081
 ENV JAVA_OPTS="-Xmx512m -Xms256m"
 
 # Comando de inicio
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /app/user-service.jar"]
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /app/delivery-service.jar"]

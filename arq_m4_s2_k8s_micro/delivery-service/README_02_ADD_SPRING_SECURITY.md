@@ -24,7 +24,7 @@
 
 - RoleEntity.java
 ```java
-package com.tecsup.app.micro.user.infrastructure.persistence.entity;
+package com.tecsup.app.micro.delivery.infrastructure.persistence.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -70,9 +70,8 @@ public class RoleEntity {
 - UserEntity.java (agregar campos password y enabled)
 
 ```java
-package com.tecsup.app.micro.user.infrastructure.persistence.entity;
+package com.tecsup.app.micro.delivery.infrastructure.persistence.entity;
 
-import com.tecsup.app.micro.delivery.infrastructure.persistence.entity.RoleEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -88,7 +87,7 @@ import java.util.Set;
  * Esta clase pertenece a la capa de infraestructura y maneja la persistencia
  */
 @Entity
-@Table(name = "users", indexes = {
+@Table(name = "deliveries", indexes = {
         @Index(name = "idx_users_email", columnList = "email", unique = true),
         @Index(name = "idx_users_name", columnList = "name"),
         @Index(name = "idx_users_created_at", columnList = "created_at")
@@ -165,9 +164,8 @@ public class UserEntity {
 
 ```java
 
-package com.tecsup.app.micro.user.infrastructure.persistence.repository;
+package com.tecsup.app.micro.delivery.infrastructure.persistence.repository;
 
-import com.tecsup.app.micro.delivery.infrastructure.persistence.entity.RoleEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
@@ -189,10 +187,11 @@ public interface JpaRoleRepository extends JpaRepository<RoleEntity, Long> {
 
 ```java
 
-package com.tecsup.app.micro.user.infrastructure.security;
+package com.tecsup.app.micro.delivery.infrastructure.security;
 
+import com.tecsup.app.micro.delivery.infrastructure.persistence.entity.DeliveryEntity;
 import com.tecsup.app.micro.delivery.infrastructure.persistence.entity.UserEntity;
-import com.tecsup.app.micro.delivery.infrastructure.persistence.repository.JpaUserRepository;
+import com.tecsup.app.micro.delivery.infrastructure.persistence.repository.JpaDeliveryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;
@@ -210,19 +209,19 @@ import java.util.stream.Collectors;
 /**
  * Servicio de autenticación que carga usuarios desde userdb (PostgreSQL)
  *
- * Paquete: com.tecsup.app.micro.user.infrastructure.security
+ * Paquete: com.tecsup.app.micro.delivery.infrastructure.security
  * Sesión 1 - Módulo 4: Seguridad en Microservicios
  *
  * Usa el email como username para autenticación.
  * Lee los roles desde la tabla user_roles (relación N:N).
- * Los passwords están almacenados con BCrypt en la tabla users.
+ * Los passwords están almacenados con BCrypt en la tabla deliveries.
  */
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private final JpaUserRepository jpaUserRepository;
+    private final JpaDeliveryRepository jpaDeliveryRepository;
 
     /**
      * Carga un usuario por email desde userdb.
@@ -237,7 +236,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         log.info("Autenticando usuario con email: {}", email);
 
-        UserEntity userEntity = jpaUserRepository.findByEmail(email)
+        DeliveryEntity deliveryEntity = jpaUserRepository.findByEmail(email)
                 .orElseThrow(() -> {
                     log.warn("Usuario no encontrado: {}", email);
                     return new UsernameNotFoundException("Usuario no encontrado con email: " + email);
@@ -245,16 +244,16 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         // Convertir roles de la BD a GrantedAuthority de Spring Security
         // Ejemplo: RoleEntity(name="ROLE_ADMIN") → SimpleGrantedAuthority("ROLE_ADMIN")
-        List<GrantedAuthority> authorities = userEntity.getRoles().stream()
+        List<GrantedAuthority> authorities = deliveryEntity.getRoles().stream()
                 .map(role -> new SimpleGrantedAuthority(role.getName()))
                 .collect(Collectors.toList());
 
         log.info("Usuario autenticado: {} con roles: {}", email, authorities);
 
         return new User(
-                userEntity.getEmail(),       // username = email
-                userEntity.getPassword(),    // password BCrypt desde BD
-                userEntity.getEnabled(),     // enabled
+                deliveryEntity.getEmail(),       // username = email
+                deliveryEntity.getPassword(),    // password BCrypt desde BD
+                deliveryEntity.getEnabled(),     // enabled
                 true,                        // accountNonExpired
                 true,                        // credentialsNonExpired
                 true,                        // accountNonLocked
@@ -269,9 +268,8 @@ public class CustomUserDetailsService implements UserDetailsService {
 - SecurityConfig.java
 
 ```java
-package com.tecsup.app.micro.user.infrastructure.config;
+package com.tecsup.app.micro.delivery.infrastructure.config;
 
-import com.tecsup.app.micro.delivery.infrastructure.security.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -287,18 +285,18 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 /**
- * Configuración de Spring Security para user-service
+ * Configuración de Spring Security para delivery-service
  *
- * Paquete: com.tecsup.app.micro.user.infrastructure.config
+ * Paquete: com.tecsup.app.micro.delivery.infrastructure.config
  * Sesión 1: HTTP Basic + roles
  * Sesión 2: Se reemplaza HTTP Basic por JWT (descomentar líneas marcadas)
  *
  * Endpoints:
  *   POST /api/auth/login       → público (Sesión 2)
  *   POST /api/auth/register    → público (Sesión 2)
- *   GET  /api/users/health     → público
- *   GET  /api/users/me         → autenticado
- *   GET/POST/PUT/DELETE /api/users/** → ADMIN
+ *   GET  /api/deliveries/health     → público
+ *   GET  /api/deliveries/me         → autenticado
+ *   GET/POST/PUT/DELETE /api/deliveries/** → ADMIN
  *   Actuator /actuator/health  → público
  */
 @Configuration
@@ -325,11 +323,11 @@ public class SecurityConfig {
 
                         // Endpoints públicos
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/users/health").permitAll()
+                        .requestMatchers("/api/deliveries/health").permitAll()
                         .requestMatchers("/actuator/health/**").permitAll()
 
                         // Solo ADMIN puede gestionar usuarios
-                        .requestMatchers("/api/users/**").hasRole("ADMIN")
+                        .requestMatchers("/api/deliveries/**").hasRole("ADMIN")
 
                         // Todo lo demás requiere autenticación
                         .anyRequest().authenticated()
@@ -392,14 +390,16 @@ public class SecurityConfig {
 - UserController.java
 
 ```java
-package com.tecsup.app.micro.user.presentation.controller;
+package com.tecsup.app.micro.delivery.presentation.controller;
 
-import com.tecsup.app.micro.delivery.application.service.UserApplicationService;
+import com.tecsup.app.micro.delivery.application.service.DeliveryApplicationService;
+import com.tecsup.app.micro.delivery.domain.model.Delivery;
 import com.tecsup.app.micro.delivery.domain.model.User;
-import com.tecsup.app.micro.delivery.presentation.dto.CreateUserRequest;
+import com.tecsup.app.micro.delivery.presentation.dto.CreateDeliveryRequest;
+import com.tecsup.app.micro.delivery.presentation.dto.UpdateDeliveryRequest;
 import com.tecsup.app.micro.delivery.presentation.dto.UpdateUserRequest;
-import com.tecsup.app.micro.delivery.presentation.dto.UserResponse;
-import com.tecsup.app.micro.delivery.presentation.mapper.UserDtoMapper;
+import com.tecsup.app.micro.delivery.presentation.dto.DeliveryResponse;
+import com.tecsup.app.micro.delivery.presentation.mapper.DeliveryDtoMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -416,32 +416,32 @@ import java.util.List;
  * MODIFICADO en Módulo 4 - Sesión 1: Se agregan anotaciones @PreAuthorize
  *
  * Reglas de acceso:
- *   GET    /api/users          → ADMIN
- *   GET    /api/users/{id}     → ADMIN
- *   GET    /api/users/me       → Autenticado (cualquier rol)
- *   POST   /api/users          → ADMIN
- *   PUT    /api/users/{id}     → ADMIN
- *   DELETE /api/users/{id}     → ADMIN
- *   GET    /api/users/health   → Público
+ *   GET    /api/deliveries          → ADMIN
+ *   GET    /api/deliveries/{id}     → ADMIN
+ *   GET    /api/deliveries/me       → Autenticado (cualquier rol)
+ *   POST   /api/deliveries          → ADMIN
+ *   PUT    /api/deliveries/{id}     → ADMIN
+ *   DELETE /api/deliveries/{id}     → ADMIN
+ *   GET    /api/deliveries/health   → Público
  */
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/deliveries")
 @RequiredArgsConstructor
 @Slf4j
 public class UserController {
 
-    private final UserApplicationService userApplicationService;
-    private final UserDtoMapper userDtoMapper;
+    private final DeliveryApplicationService deliveryApplicationService;
+    private final DeliveryDtoMapper deliveryDtoMapper;
 
     /**
      * Obtiene todos los usuarios (solo ADMIN)
      */
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<UserResponse>> getAllUsers() {
-        log.info("REST request to get all users");
-        List<User> users = userApplicationService.getAllUsers();
-        return ResponseEntity.ok(userDtoMapper.toResponseList(users));
+    public ResponseEntity<List<DeliveryResponse>> getAllUsers() {
+        log.info("REST request to get all deliveries");
+        List<Delivery> deliveries = userApplicationService.getAllUsers();
+        return ResponseEntity.ok(userDtoMapper.toResponseList(deliveries));
     }
 
     /**
@@ -451,12 +451,12 @@ public class UserController {
      */
     @GetMapping("/me")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<UserResponse> getCurrentUser(Authentication authentication) {
-        log.info("REST request to get current user: {}", authentication.getName());
+    public ResponseEntity<DeliveryResponse> getCurrentUser(Authentication authentication) {
+        log.info("REST request to get current delivery: {}", authentication.getName());
         // authentication.getName() retorna el email (subject del JWT)
         // Se podría buscar por email en lugar de por ID
         return ResponseEntity.ok(
-                UserResponse.builder()
+                DeliveryResponse.builder()
                         .email(authentication.getName())
                         .name(authentication.getName())
                         .build()
@@ -468,10 +468,10 @@ public class UserController {
      */
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
-        log.info("REST request to get user by id: {}", id);
-        User user = userApplicationService.getUserById(id);
-        return ResponseEntity.ok(userDtoMapper.toResponse(user));
+    public ResponseEntity<DeliveryResponse> getUserById(@PathVariable Long id) {
+        log.info("REST request to get delivery by id: {}", id);
+        Delivery delivery = userApplicationService.getUserById(id);
+        return ResponseEntity.ok(userDtoMapper.toResponse(delivery));
     }
 
     /**
@@ -479,12 +479,12 @@ public class UserController {
      */
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UserResponse> createUser(@Valid @RequestBody CreateUserRequest request) {
-        log.info("REST request to create user: {}", request.getEmail());
-        User user = userDtoMapper.toDomain(request);
-        User createdUser = userApplicationService.createUser(user);
+    public ResponseEntity<DeliveryResponse> createUser(@Valid @RequestBody CreateDeliveryRequest request) {
+        log.info("REST request to create delivery: {}", request.getEmail());
+        Delivery delivery = userDtoMapper.toDomain(request);
+        Delivery createdDelivery = userApplicationService.createUser(delivery);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(userDtoMapper.toResponse(createdUser));
+                .body(userDtoMapper.toResponse(createdDelivery));
     }
 
     /**
@@ -492,13 +492,13 @@ public class UserController {
      */
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UserResponse> updateUser(
+    public ResponseEntity<DeliveryResponse> updateUser(
             @PathVariable Long id,
-            @Valid @RequestBody UpdateUserRequest request) {
-        log.info("REST request to update user with id: {}", id);
-        User user = userDtoMapper.toDomain(request);
-        User updatedUser = userApplicationService.updateUser(id, user);
-        return ResponseEntity.ok(userDtoMapper.toResponse(updatedUser));
+            @Valid @RequestBody UpdateDeliveryRequest request) {
+        log.info("REST request to update delivery with id: {}", id);
+        Delivery delivery = userDtoMapper.toDomain(request);
+        Delivery updatedDelivery = userApplicationService.updateUser(id, delivery);
+        return ResponseEntity.ok(userDtoMapper.toResponse(updatedDelivery));
     }
 
     /**
@@ -507,7 +507,7 @@ public class UserController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        log.info("REST request to delete user with id: {}", id);
+        log.info("REST request to delete delivery with id: {}", id);
         userApplicationService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
@@ -528,13 +528,13 @@ public class UserController {
 - Ejecutar la aplicación y probar los endpoints con Postman o curl.
 ```
 # Sin autenticación → 401
-curl http://localhost:8081/api/users
+curl http://localhost:8081/api/deliveries
 
 # Con ADMIN → 200
-curl -u juan.perez@example.com:admin123 http://localhost:8081/api/users
+curl -u juan.perez@example.com:admin123 http://localhost:8081/api/deliveries
 
 # Con USER intentando acceso ADMIN → 403
-curl -u maria.garcia@example.com:user123 http://localhost:8081/api/users
+curl -u maria.garcia@example.com:user123 http://localhost:8081/api/deliveries
 ```
 
 ## 2.- Desplegar en Kubernetes con seguridad
@@ -551,16 +551,16 @@ curl -u maria.garcia@example.com:user123 http://localhost:8081/api/users
 mvn clean package -DskipTests
 
 # Construir imagen
-docker build -t user-service:1.0 .
+docker build -t delivery-service:1.0 .
 
 # Este proceso toma 2-3 minutos la primera vez
 # Ver progreso: [1/2] STEP X/Y...
 
 # Verificar imagen creada
-docker images | grep user-service
+docker images | grep delivery-service
 
 # Deberías ver:
-# user-service   1.0   abc123def456   1 minute ago   230MB
+# delivery-service   1.0   abc123def456   1 minute ago   230MB
 
 ```
 
@@ -573,7 +573,7 @@ docker run -p 8081:8081 \
 -e DB_URL=jdbc:postgresql://host.docker.internal:5434/userdb \
 -e DB_USERNAME=postgres \
 -e DB_PASSWORD=postgres \
-user-service:1.0
+delivery-service:1.0
 
 
 # En otra terminal, probar
@@ -585,7 +585,7 @@ curl http://localhost:8081/actuator/health
 # {"status":"UP","groups":["liveness","readiness"]}
 
 # Listar usuarios
-curl http://localhost:8081/api/users
+curl http://localhost:8081/api/deliveries
 
 ```
 
@@ -593,24 +593,24 @@ curl http://localhost:8081/api/users
 
 - En caso se haya modificado el código después del despliegue inicial, reiniciar el deployment para aplicar los cambios:
 ```
- kubectl rollout restart deployment user-service -n user-service
+ kubectl rollout restart deployment delivery-service -n delivery-service
 ```
 - Verificar despliegue, servicio y pods:
 ```
 # Verificar despliegue
-kubectl get deployments -n user-service
+kubectl get deployments -n delivery-service
 
 # Verificar servicio
-kubectl get service -n user-service
+kubectl get service -n delivery-service
 
 # Verificar pods
-kubectl get pods  -n user-service
+kubectl get pods  -n delivery-service
 
 # Ver detalles de un pod
-kubectl describe pod <POD_NAME> -n user-service
+kubectl describe pod <POD_NAME> -n delivery-service
 
 # Ver logs en tiempo real
-kubectl logs -f <POD_NAME> -n user-service
+kubectl logs -f <POD_NAME> -n delivery-service
 
 ```
 
@@ -619,11 +619,11 @@ kubectl logs -f <POD_NAME> -n user-service
 
 ```
 # Sin autenticación → 401
-curl http://localhost:30081/api/users
+curl http://localhost:30081/api/deliveries
 
 # Con ADMIN → 200
-curl -u juan.perez@example.com:admin123 http://localhost:30081/api/users
+curl -u juan.perez@example.com:admin123 http://localhost:30081/api/deliveries
 
 # Con USER intentando acceso ADMIN → 403
-curl -u maria.garcia@example.com:user123 http://localhost:30081/api/users
+curl -u maria.garcia@example.com:user123 http://localhost:30081/api/deliveries
 ```

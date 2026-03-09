@@ -5,19 +5,18 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.math.BigDecimal;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
+public class OrderItems {
 
     private Long id;
-    private String name;
-    private String email;
-    private String phone;
-    private String address;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private ProductDetail product;
+    private Integer quantity;
+    private BigDecimal unitPrice;
+    private BigDecimal subtotal;
+
 }

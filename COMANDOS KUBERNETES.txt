@@ -31,6 +31,9 @@ jdbc:postgresql://localhost:5436/orderdb
 payment-service : 8086
 jdbc:postgresql://localhost:5437/paymentdb
 
+delivery-service : 8087
+jdbc:postgresql://localhost:5438/deliverydb
+
 
 
 

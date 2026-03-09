@@ -1,25 +1,20 @@
-# ============================================
-# APPLICATION CONFIGURATION FOR KUBERNETES
-# ============================================
-# Este archivo se activa con: -Dspring.profiles.active=kubernetes
-# Las variables ${} se reemplazan con variables de entorno
 
 # ============================================
 # SERVER CONFIGURATION
 # ============================================
 server:
-  port: 8083
+  port: 8087
 
 spring:
   application:
-    name: user-service
+    name: delivery-service
 
   # ============================================
   # DATASOURCE CONFIGURATION
   # ============================================
   # Estas variables vienen de ConfigMap y Secrets de Kubernetes
   datasource:
-    url: jdbc:postgresql://localhost:5434/userdb
+    url: jdbc:postgresql://localhost:5438/deliverydb
     username:  ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
@@ -73,3 +68,22 @@ logging:
   level:
     com.tecsup.app.micro.user: ${LOG_LEVEL:INFO}
     org.hibernate.SQL: ${SQL_LOG_LEVEL:WARN}
+
+# ============================================
+# JWT CONFIGURATION (Sesión 2)
+# ============================================
+jwt:
+  secret: ${JWT_SECRET:m1S3cr3tK3yJWT_T3csup2025!@#SecureToken}
+  expiration: 3600000  # 1 hora en milisegundos
+
+# ============================================
+# ORDER SERVICE URL - Comunicación entre servicios
+# ============================================
+# En Kubernetes, usar DNS interno
+# Formato: http://<service-name>.<namespace>.svc.cluster.local
+order:
+  service:
+    url: ${ORDER_SERVICE_URL:http://localhost:8085}
+user:
+  service:
+    url: ${USER_SERVICE_URL:http://localhost:8083}
