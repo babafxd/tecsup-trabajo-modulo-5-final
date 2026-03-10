@@ -1,37 +1,24 @@
 Estos son los servicios:
 
 El sistema consta de servicios como: Servicio de Usuarios, Servicio de Pedidos,
-
 Servicio de Catálogo, Servicio de Entregas, y Servicio de Pagos. 
 
+Lístalos correctamente y elabora el flujo que te propongo:
 
-
-Listalos correctamente y elabora el flujo que te propongo:
-
-* Usuario se autentica y obtiene un token (user-service) : OK
-
-* Con el token, podemos consultar el catalogo para escoger que vamos a pedir (catalog-service) : OK
-
-* Con el token, podemos realizar un pedido (order-service) : OK
-
-* Con el token, podemos realizar el pago (payment-service)  : OK
-
-* Con el token, podemos consultar con el codigo de entrega el pedido (delivery-service)
-
-
-
-AHORA LOS EVENTOS:
+* Usuario se autentica y obtiene un token (user-service)
+* Con el token, podemos consultar el catalogo para escoger que vamos a pedir (catalog-service)
+* Con el token, podemos realizar un pedido (order-service)
+* Con el token, podemos realizar el pago (payment-service)
+* Con el token, podemos consultar con el código de entrega el pedido (delivery-service)
 
 * order-service: crear un pedido con estado PENDIENTE PAGO. (PENDING)  : OK
 
-* payment-service : registra el pago, emite evento PaymentApprovedEvent o PaymentRejectedEvent, order-service consume estos eventos y actualizan el pedido a CONFIRMED o REJECTED. : OK
 
-* order-service: despues de consumir el evento PaymentApprovedEvent o PaymentRejectedEvent, emite un evento OrderApproved.: OK
+* payment-service : registra el pago, emite evento PaymentApprovedEvent o PaymentRejectedEvent, order-service consume estos eventos y actualizan el pedido a CONFIRMED o REJECTED.
+
+* order-service: después de consumir el evento PaymentApprovedEvent o PaymentRejectedEvent, emite un evento OrderApproved
 
 * delivery-service: 
-	consume el evento OrderApproved y registra una entrega o delivery en estado READY, : FALTA CONFIGURAR EL CONSUMIR
-	despues notifica por correo el id delivery para que el usuario pueda consultar la entrega por el endpoint de consulta.
-	finalmente con el endpoint de PUT/1 a estado DELIVERED.
-
-* pasar todo a clusters
+	consume el evento OrderApproved y registra una entrega o delivery en estado READY
+	finalmente mediante el servicio se cambia al estado DELIVERED. : 
 
