@@ -23,7 +23,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class DeliveryController {
-    
+
     private final DeliveryApplicationService deliveryApplicationService;
     private final DeliveryDtoMapper deliveryDtoMapper;
 
@@ -43,7 +43,7 @@ public class DeliveryController {
 
         //log.info("REST request to create order for userid: {}", request.get());
         Delivery order = deliveryDtoMapper.toDomain(request);
-        Delivery createdOrder = deliveryApplicationService.createDelivery(order, jwtToken);
+        Delivery createdOrder = deliveryApplicationService.createDelivery(order, Delivery.DeliveryStatus.READY.name(), jwtToken);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(deliveryDtoMapper.toResponse(createdOrder));
     }
@@ -51,7 +51,7 @@ public class DeliveryController {
     @GetMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<DeliveryResponse> getDeliveryById(@PathVariable Long id,
-                                                      @RequestHeader(value = "Authorization", required = false) String authHeader) {
+                                                            @RequestHeader(value = "Authorization", required = false) String authHeader) {
         log.info("REST request to get delivery by id: {}", id);
 
         // Extraer JWT del header
@@ -66,6 +66,26 @@ public class DeliveryController {
 
         Delivery order = deliveryApplicationService.getDeliveryById(id);
         return ResponseEntity.ok(deliveryDtoMapper.toResponse(order));
+    }
+
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<DeliveryResponse>> getAllDeliveries() {
+        log.info("REST request to get all users");
+        List<Delivery> users = deliveryApplicationService.getAllDeliveries();
+        return ResponseEntity.ok(deliveryDtoMapper.toResponseList(users));
+    }
+
+
+    @PutMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<DeliveryResponse> updatedDelivery(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateDeliveryRequest request) {
+        log.info("REST request to update Delivery with id: {}", id);
+        Delivery delivery = deliveryDtoMapper.toDomain(request);
+        Delivery updatedDelivery = deliveryApplicationService.updateDelivery(id, delivery);
+        return ResponseEntity.ok(deliveryDtoMapper.toResponse(updatedDelivery));
     }
 
     @GetMapping("/health")

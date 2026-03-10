@@ -32,8 +32,8 @@ spec:
       port: 80
 
       # targetPort: Puerto del CONTENEDOR
-      targetPort: 8081
+      targetPort: 8083
 
       # nodePort: Puerto en LOCALHOST
       # Rango: 30000-32767
-      nodePort: 30081
+      nodePort: 30083

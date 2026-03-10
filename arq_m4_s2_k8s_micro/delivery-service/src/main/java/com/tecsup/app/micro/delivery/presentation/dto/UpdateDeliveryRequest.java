@@ -12,9 +12,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UpdateDeliveryRequest {
 
-    @NotNull(message = "Order ID is required")
-    private Long orderId;
-
     @NotBlank(message = "Status is required")
     @Pattern(regexp = "READY|DELIVERED",
             message = "Status must be READY or DELIVERED")

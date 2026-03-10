@@ -4,10 +4,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: user-service
-  namespace: user-service
+  name: delivery-service
+  namespace: delivery-service
   labels:
-    app: user-service
+    app: delivery-service
 
 spec:
   # ========================================
@@ -19,7 +19,7 @@ spec:
   # Selector: ¿A qué pods dirigir tráfico?
   # ========================================
   selector:
-    app: user-service
+    app: delivery-service
 
   # ========================================
   # Puertos
@@ -32,8 +32,8 @@ spec:
       port: 80
 
       # targetPort: Puerto del CONTENEDOR
-      targetPort: 8081
+      targetPort: 8087
 
       # nodePort: Puerto en LOCALHOST
       # Rango: 30000-32767
-      nodePort: 30081
+      nodePort: 30087

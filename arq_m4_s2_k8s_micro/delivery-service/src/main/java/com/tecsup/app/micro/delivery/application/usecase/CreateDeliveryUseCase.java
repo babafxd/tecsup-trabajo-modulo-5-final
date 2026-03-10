@@ -14,13 +14,20 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 @Slf4j
 public class CreateDeliveryUseCase {
-    
+
     private final DeliveryRepository deliveryRepository;
     private final OrderClient orderClient;
     private final UserClient userClient;
 
-    public Delivery execute(Delivery delivery, String jwtToken) {
+    public Delivery execute(Delivery delivery, String Status, String jwtToken) {
         log.debug("Executing CreateDeliveryUseCase for order id: {}", delivery.getOrderId());
+
+        if (jwtToken.isEmpty()) {
+            var token = userClient.getToken()
+                    .orElseThrow(() -> new TokenNotFoundException("Token not found"));
+
+            jwtToken = token.getToken();
+        }
 
         var orderInfo = orderClient.getOrderById(delivery.getOrderId(), jwtToken)
                 .orElseThrow(() -> new OrderNotFoundException("Order not found for Id:" + delivery.getOrderId()));
@@ -33,15 +40,15 @@ public class CreateDeliveryUseCase {
         }
 
         var userInfo = userClient.getUserById(orderInfo.getUserId(), jwtToken)
-                .orElseThrow(()->new UserNotFoundException("User not found: " + orderInfo.getUserId()));
+                .orElseThrow(() -> new UserNotFoundException("User not found: " + orderInfo.getUserId()));
 
         delivery.setDeliveryAddress(userInfo.getAddress());
 
-        
+
         // Guardar usuario
         Delivery savedDelivery = deliveryRepository.save(delivery);
         log.info("Delivery created successfully with id: {}", savedDelivery.getId());
-        
+
         return savedDelivery;
     }
 }

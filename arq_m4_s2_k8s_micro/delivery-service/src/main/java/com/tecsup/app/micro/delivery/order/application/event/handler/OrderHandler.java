@@ -22,7 +22,7 @@ import org.springframework.stereotype.Component;
 public class OrderHandler
 {
 
-    private DeliveryApplicationService deliveryApplicationService;
+    private final DeliveryApplicationService deliveryApplicationService;
     private final DeliveryDtoMapper deliveryDtoMapper;
 
     @KafkaHandler
@@ -31,6 +31,6 @@ public class OrderHandler
         CreateDeliveryRequest request = new CreateDeliveryRequest();
         request.setOrderId(event.getOrderId());
         Delivery delivery = deliveryDtoMapper.toDomain(request);
-        Delivery saved = deliveryApplicationService.createDelivery(delivery, Delivery.DeliveryStatus.READY.name());
+        deliveryApplicationService.createDelivery(delivery, Delivery.DeliveryStatus.READY.name(), "");
     }
 }

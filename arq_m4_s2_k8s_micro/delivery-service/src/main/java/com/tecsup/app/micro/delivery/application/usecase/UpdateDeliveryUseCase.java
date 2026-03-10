@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+
 /**
  * Caso de uso: Actualizar un usuario existente
  */
@@ -25,6 +27,14 @@ public class UpdateDeliveryUseCase {
 
         Delivery existingDelivery = deliveryRepository.findById(id)
                 .orElseThrow(() -> new DeliveryNotFoundException("Delivery not found: " + id));
+
+        if(existingDelivery.getStatus().equals(Delivery.DeliveryStatus.DELIVERED)){
+            throw new DeliveryNotFoundException("Delivery with id:"+ id + ", is DELIVERED");
+        }
+
+
+        existingDelivery.setStatus(deliveryDetails.getStatus());
+        existingDelivery.setDeliveredAt(LocalDateTime.now());
         
         // Guardar cambios
         Delivery updatedDelivery = deliveryRepository.save(existingDelivery);

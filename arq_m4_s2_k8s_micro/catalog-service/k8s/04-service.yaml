@@ -4,10 +4,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: product-service
-  namespace: product-service
+  name: catalog-service
+  namespace: catalog-service
   labels:
-    app: product-service
+    app: catalog-service
 
 spec:
   # ========================================
@@ -19,7 +19,7 @@ spec:
   # Selector: ¿A qué pods dirigir tráfico?
   # ========================================
   selector:
-    app: product-service
+    app: catalog-service
 
   # ========================================
   # Puertos
@@ -32,8 +32,8 @@ spec:
       port: 80
 
       # targetPort: Puerto del CONTENEDOR
-      targetPort: 8082
+      targetPort: 8084
 
       # nodePort: Puerto en LOCALHOST
       # Rango: 30000-32767
-      nodePort: 30082
+      nodePort: 30084

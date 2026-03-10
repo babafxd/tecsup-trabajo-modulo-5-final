@@ -1,4 +1,4 @@
-package com.tecsup.app.micro.user;
+package com.tecsup.app.micro.delivery;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

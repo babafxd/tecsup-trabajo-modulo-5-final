@@ -38,14 +38,14 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
                         // Endpoints públicos (lectura de productos)
-                        .requestMatchers(HttpMethod.GET, "/api/deliveries").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/deliveries").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/deliveries/available").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/deliveries/health").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/deliveries/{id}").hasAnyRole("ADMIN","USER") //.permitAll() // CAMBIO
                         .requestMatchers("/actuator/health/**").permitAll()
 
                         .requestMatchers(HttpMethod.POST, "/api/deliveries").hasAnyRole("ADMIN","USER")
-                        .requestMatchers(HttpMethod.PUT, "/api/deliveries/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/deliveries/**").hasAnyRole("ADMIN","USER")
                         .requestMatchers(HttpMethod.DELETE, "/api/deliveries/**").hasRole("ADMIN")
 
                         // Todo lo demás requiere autenticación

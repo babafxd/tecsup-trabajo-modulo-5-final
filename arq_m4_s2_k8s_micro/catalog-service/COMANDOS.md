@@ -2,24 +2,23 @@
 Ejecutar clean y package (MVN)
 
 -- 
-docker build -t product-service:1.0 .
+docker build -t catalog-service:1.0 .
 
 --verificar
-docker images product-service
+docker images catalog-service
 
 --powershell ejecutar:
 
-docker run -p 8082:8082 \
--e SPRING_PROFILES_ACTIVE=kubernetes \
--e DB_URL=jdbc:postgresql://host.docker.internal:5433/productdb \
--e DB_USERNAME=postgres \
--e DB_PASSWORD=postgres \
-product-service:1.0
+docker run -p 8084:8084
+-e SPRING_PROFILES_ACTIVE=kubernetes
+-e DB_URL=jdbc:postgresql://host.docker.internal:5435/catalogdb
+-e DB_USERNAME=postgres
+-e DB_PASSWORD=postgres
+catalog-service:1.0
 
 
 --postman
-http://localhost:8082/actuator/health
-
+http://localhost:8084/actuator/health
 
 --
 kubectl apply -f k8s/00-namespace.yaml
@@ -30,11 +29,11 @@ kubectl apply -f k8s/04-service.yaml
 
 
 kubectl get namespaces  
-kubectl get configmap -n product-service
-kubectl get secret -n product-service
-kubectl describe secret product-service-secret -n product-service
-kubectl get pods -n product-service 
+kubectl get configmap -n catalog-service
+kubectl get secret -n catalog-service
+kubectl describe secret catalog-service-secret -n catalog-service
+kubectl get pods -n catalog-service 
 
 -- ver log:
-kubectl logs -f product-service-7fcb6b4847-dl8p4 -n product-service
-kubectl get service -n product-service
+kubectl logs -f catalog-service-6fbc5f46bf-gm2gj -n catalog-service
+kubectl get service -n catalog-service

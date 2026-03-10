@@ -6,7 +6,7 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: product-service
+  name: catalog-service
   labels:
-    name: product-service
+    name: catalog-service
     environment: local

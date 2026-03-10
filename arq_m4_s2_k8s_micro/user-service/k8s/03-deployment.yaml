@@ -44,7 +44,7 @@ spec:
 
           # Puerto del contenedor
           ports:
-            - containerPort: 8081
+            - containerPort: 8083
               name: http
 
           # ====================================

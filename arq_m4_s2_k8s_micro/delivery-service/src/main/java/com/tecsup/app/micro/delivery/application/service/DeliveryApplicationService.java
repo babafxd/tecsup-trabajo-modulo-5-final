@@ -22,7 +22,7 @@ public class DeliveryApplicationService {
     private final GetDeliveryByIdUseCase getDeliveryByIdUseCase;
     private final CreateDeliveryUseCase createDeliveryUseCase;
     private final UpdateDeliveryUseCase updateDeliveryUseCase;
-
+    private final GetAllDeliveriesUseCase getAllDeliveriesUseCase;
 
     @Transactional(readOnly = true)
     public Delivery getDeliveryById(Long id) {
@@ -30,13 +30,18 @@ public class DeliveryApplicationService {
     }
 
     @Transactional
-    public Delivery createDelivery(Delivery delivery, String jwt) {
-        return createDeliveryUseCase.execute(delivery, jwt);
+    public Delivery createDelivery(Delivery delivery, String status, String jwt) {
+        return createDeliveryUseCase.execute(delivery, status, jwt);
     }
 
     @Transactional
-    public Delivery updateUser(Long id, Delivery delivery) {
+    public Delivery updateDelivery(Long id, Delivery delivery) {
         return updateDeliveryUseCase.execute(id, delivery);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Delivery> getAllDeliveries() {
+        return getAllDeliveriesUseCase.execute();
     }
 
 }

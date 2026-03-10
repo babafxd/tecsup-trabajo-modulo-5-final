@@ -8,7 +8,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 @Repository
@@ -32,6 +34,15 @@ public class DeliveryRepositoryImpl implements DeliveryRepository {
         DeliveryEntity entity = mapper.toEntity(delivery);
         DeliveryEntity savedEntity = jpaDeliveryRepository.save(entity);
         return mapper.toDomain(savedEntity);
+    }
+
+    @Override
+    public List<Delivery> findAll() {
+        log.debug("Finding all deliveries");
+        return jpaDeliveryRepository.findAll()
+                .stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
     }
 
 }

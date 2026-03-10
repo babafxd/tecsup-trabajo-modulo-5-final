@@ -4,10 +4,10 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: product-service-config
-  namespace: product-service
+  name: catalog-service-config
+  namespace: catalog-service
   labels:
-    app: product-service
+    app: catalog-service
 
 # Pares clave-valor
 data:
@@ -18,7 +18,7 @@ data:
 
   # URL de la base de datos
   # host.docker.internal apunta a localhost de tu PC
-  DB_URL: "jdbc:postgresql://host.docker.internal:5433/productdb"
+  DB_URL: "jdbc:postgresql://host.docker.internal:5435/catalogdb"
 
 
   # Configuración de JPA

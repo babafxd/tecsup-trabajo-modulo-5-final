@@ -4,10 +4,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: product-service
-  namespace: product-service
+  name: catalog-service
+  namespace: catalog-service
   labels:
-    app: product-service
+    app: catalog-service
 
 spec:
   # ========================================
@@ -20,7 +20,7 @@ spec:
   # ========================================
   selector:
     matchLabels:
-      app: product-service
+      app: catalog-service
 
   # ========================================
   # Template: Cómo crear cada pod
@@ -28,14 +28,14 @@ spec:
   template:
     metadata:
       labels:
-        app: product-service
+        app: catalog-service
 
     spec:
       containers:
-        - name: product-service
+        - name: catalog-service
 
           # Imagen Docker
-          image: product-service:1.0
+          image: catalog-service:1.0
 
           # imagePullPolicy:
           # - Never: Solo usar imagen local (desarrollo)
@@ -44,7 +44,7 @@ spec:
 
           # Puerto del contenedor
           ports:
-            - containerPort: 8082
+            - containerPort: 8084
               name: http
 
           # ====================================
@@ -59,31 +59,31 @@ spec:
             - name: USER_SERVICE_URL
               valueFrom:
                 configMapKeyRef:
-                  name: product-service-config
+                  name: catalog-service-config
                   key: USER_SERVICE_URL
 
             - name: DB_URL
               valueFrom:
                 configMapKeyRef:
-                  name: product-service-config
+                  name: catalog-service-config
                   key: DB_URL
 
             - name: DDL_AUTO
               valueFrom:
                 configMapKeyRef:
-                  name: product-service-config
+                  name: catalog-service-config
                   key: DDL_AUTO
 
             - name: LOG_LEVEL
               valueFrom:
                 configMapKeyRef:
-                  name: product-service-config
+                  name: catalog-service-config
                   key: LOG_LEVEL
 
             - name: JAVA_OPTS
               valueFrom:
                 configMapKeyRef:
-                  name: product-service-config
+                  name: catalog-service-config
                   key: JAVA_OPTS
 
             # Desde Secret
@@ -91,17 +91,17 @@ spec:
             - name: DB_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: product-service-secret
+                  name: catalog-service-secret
                   key: DB_USERNAME
 
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: product-service-secret
+                  name: catalog-service-secret
                   key: DB_PASSWORD
 
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: product-service-secret
+                  name: catalog-service-secret
                   key: JWT_SECRET

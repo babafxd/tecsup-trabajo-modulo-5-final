@@ -1,5 +1,6 @@
 package com.tecsup.app.micro.delivery.presentation.controller;
 
+import com.tecsup.app.micro.delivery.domain.exception.DeliveryNotFoundException;
 import com.tecsup.app.micro.delivery.domain.exception.DuplicateEmailException;
 import com.tecsup.app.micro.delivery.domain.exception.InvalidUserDataException;
 import com.tecsup.app.micro.delivery.domain.exception.UserNotFoundException;
@@ -23,7 +24,21 @@ import java.util.Map;
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
-    
+
+
+
+
+    @ExceptionHandler(DeliveryNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleDeliveryNotFoundException(DeliveryNotFoundException ex) {
+        log.error("Delivery not found: {}", ex.getMessage());
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.NOT_FOUND.value(),
+                ex.getMessage(),
+                LocalDateTime.now()
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
     /**
      * Maneja UserNotFoundException
      */
